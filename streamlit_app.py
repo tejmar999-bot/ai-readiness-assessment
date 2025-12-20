@@ -271,8 +271,8 @@ def initialize_session_state():
         st.session_state.user_location = ""
     if 'user_info_collected' not in st.session_state:
         st.session_state.user_info_collected = False
-    if 'scroll_to_top' not in st.session_state:
-        st.session_state.scroll_to_top = False
+    if '' not in st.session_state:
+        st.session_state. = False
     if 'feedback_submitted' not in st.session_state:
         st.session_state.feedback_submitted = False
     if 'chat_messages' not in st.session_state:
@@ -484,7 +484,7 @@ def render_progress_bar():
 
 def render_dimension_questions(dimension_idx):
     """Render questions for a specific dimension"""
-    scroll_to_top()
+    ()
     
     dimension = DIMENSIONS[dimension_idx]
 
@@ -682,7 +682,7 @@ def render_navigation_buttons():
         if st.session_state.current_dimension > 0:
             if st.button("← Previous", type="secondary"):
                 st.session_state.current_dimension -= 1
-                st.session_state.scroll_to_top = True
+                st.session_state. = True
                 st.session_state.scroll_to_question = None  # Clear question scroll when changing dimensions
                 st.rerun()
 
@@ -704,7 +704,7 @@ def render_navigation_buttons():
         if st.session_state.current_dimension < len(DIMENSIONS) - 1:
             if st.button("Next →", type="primary"):
                 st.session_state.current_dimension += 1
-                scroll_to_top()
+                ()
                 st.session_state.scroll_to_question = None  # Clear question scroll when changing dimensions
                 st.rerun()
         else:
@@ -742,7 +742,7 @@ def render_navigation_buttons():
                         print(f"Error sending assessment completion email: {e}")
 
                 st.session_state.assessment_complete = True
-                st.session_state.scroll_to_top = True  # Scroll to top to show results
+                st.session_state. = True  # Scroll to top to show results
                 st.rerun()
 
 
