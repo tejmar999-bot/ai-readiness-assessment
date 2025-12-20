@@ -271,7 +271,7 @@ def initialize_session_state():
         st.session_state.user_location = ""
     if 'user_info_collected' not in st.session_state:
         st.session_state.user_info_collected = False
-    if 'not in st.session_state:
+    if 'current page' not in st.session_state:
         st.session_state. = False
     if 'feedback_submitted' not in st.session_state:
         st.session_state.feedback_submitted = False
