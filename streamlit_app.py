@@ -1411,7 +1411,7 @@ def render_results_dashboard():
         f'<h4 style="color: {primary_color}; text-align: center;">Need Help Implementing These Recommendations?</h4>',
         unsafe_allow_html=True)
     st.markdown(
-        '<p style="text-align: center; color: #9CA3AF; margin-bottom: 1rem;">Reach out to us by clicking here.</p>',
+        '<p style="text-align: center; color: #D97642; margin-bottom: 1rem;">Reach out to us by clicking here.</p>',
         unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -1526,7 +1526,7 @@ def render_results_dashboard():
                 text.includes('Submit Feedback') ||
                 text.includes('Request Assistance')) {
                 // Apply lighter orange styling
-                button.style.backgroundColor = '#FCD34D';
+                button.style.backgroundColor = '#E8927C';
                 button.style.color = '#000000';
             }
         });
@@ -1561,7 +1561,7 @@ def render_results_dashboard():
             f'<h4 style="color: {primary_color}; text-align: center;">📧 Verify Your Email</h4>',
             unsafe_allow_html=True)
         st.markdown(
-            '<p style="text-align: center; color: #9CA3AF; margin-bottom: 1rem;">We need to verify your email before downloading your report.</p>',
+            '<p style="text-align: center; color: #CC8866; margin-bottom: 1rem;">We need to verify your email before downloading your report.</p>',
             unsafe_allow_html=True)
         
         # Initialize verification fields if not present
@@ -1810,7 +1810,7 @@ def render_chatgpt_assistant():
                     st.markdown(f"""
                     <div style="background-color: #1F2937; padding: 1rem; margin: 0.5rem 0; border-radius: 0.5rem; border-left: 3px solid {primary_color};">
                         <strong style="color: {primary_color};">You:</strong><br>
-                        <span style="color: #E5E7EB;">{content}</span>
+                        <span style="color: #E07A5F;">{content}</span>
                     </div>
                     """,
                                 unsafe_allow_html=True)
