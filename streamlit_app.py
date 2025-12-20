@@ -323,7 +323,7 @@ def render_footer():
     """Render copyright footer at the bottom of the page"""
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("""
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; color: #9CA3AF; font-size: 0.9rem; border-top: 1px solid #374151; margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; color: #E07A5F; font-size: 0.9rem; border-top: 1px solid #374151; margin-top: 2rem;">
             <div style="text-align: center; flex: 1;">
                 © T-Logic Training & Consulting Pvt. Ltd.
             </div>
@@ -778,7 +778,7 @@ def create_dimension_breakdown_chart(raw_scores, dimension_titles, dimension_col
             radialaxis=dict(
                 visible=True,
                 range=[0, 15],
-                tickfont=dict(color='#9CA3AF', size=13),
+                tickfont=dict(color='#E07A5F', size=13),
                 gridcolor='rgba(255, 255, 255, 0.2)',
                 showgrid=True
             ),
@@ -996,7 +996,7 @@ def render_results_dashboard():
         <div class="score-card">
             <h3 style="color: {primary_color};">Total Score</h3>
             <div style="font-size: 2rem; font-weight: bold;">{total_score}/90</div>
-            <div style="font-size: 2rem; font-weight: bold; color: #9CA3AF;">({percentage}%)</div>
+            <div style="font-size: 2rem; font-weight: bold; color: #E07A5F;">({percentage}%)</div>
         </div>
         """,
                     unsafe_allow_html=True)
@@ -1277,7 +1277,7 @@ def render_results_dashboard():
         f'<h3 id="recommended-actions" style="color: {primary_color}; text-align: center; margin-top: 2rem;">🎯 Recommended Actions*</h3>',
         unsafe_allow_html=True)
     st.markdown(
-        '<p style="text-align: center; color: #9CA3AF; margin-bottom: 1.5rem; font-size: 1.1rem;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
+        '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem; font-size: 1.1rem;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
         unsafe_allow_html=True)
 
     # Analyze each dimension holistically
@@ -1398,7 +1398,7 @@ def render_results_dashboard():
         <p style="color: #D1D5DB; font-size: 1.1rem; margin-bottom: 0.5rem;">
             <strong>Schedule a complimentary 45-minute consultation</strong> to discuss your results and explore how we can support your AI transformation.
         </p>
-        <p style="color: #9CA3AF; font-size: 0.9rem;">
+        <p style="color: #E07A5F; font-size: 0.9rem;">
             No obligations—just expert insights tailored to your organization's unique needs.
         </p>
     </div>
@@ -1713,7 +1713,7 @@ def render_results_dashboard():
         f'<h3 style="color: {primary_color}; text-align: center; margin-top: 2rem;">💬 Help Us Improve</h3>',
         unsafe_allow_html=True)
     st.markdown(
-        '<p style="text-align: center; color: #9CA3AF; margin-bottom: 1.5rem;">We value your feedback! Please share your thoughts to help us improve this assessment tool.</p>',
+        '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem;">We value your feedback! Please share your thoughts to help us improve this assessment tool.</p>',
         unsafe_allow_html=True)
 
     if not st.session_state.feedback_submitted:
