@@ -17,11 +17,11 @@ from utils.scoring import generate_executive_summary
 from utils.ai_chat import get_chat_response, get_assessment_insights
 
 def scroll_to_top():
-    """Inject JS snippet that scrolls the window to the top."""
+    """Scroll page to top when changing dimensions"""
     components.html(
         """
         <script>
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
         """,
         height=0,
@@ -271,8 +271,8 @@ def initialize_session_state():
         st.session_state.user_location = ""
     if 'user_info_collected' not in st.session_state:
         st.session_state.user_info_collected = False
-    if 'should_scroll_to_top' not in st.session_state:
-        st.session_state.should_scroll_to_top = False
+    if 'scroll_to_top' not in st.session_state:
+        st.session_state.scroll_to_top = False
     if 'feedback_submitted' not in st.session_state:
         st.session_state.feedback_submitted = False
     if 'chat_messages' not in st.session_state:
@@ -682,7 +682,7 @@ def render_navigation_buttons():
         if st.session_state.current_dimension > 0:
             if st.button("← Previous", type="secondary"):
                 st.session_state.current_dimension -= 1
-                st.session_state.should_scroll_to_top = True
+                st.session_state.scroll_to_top = True
                 st.session_state.scroll_to_question = None  # Clear question scroll when changing dimensions
                 st.rerun()
 
@@ -704,7 +704,7 @@ def render_navigation_buttons():
         if st.session_state.current_dimension < len(DIMENSIONS) - 1:
             if st.button("Next →", type="primary"):
                 st.session_state.current_dimension += 1
-                st.session_state.should_scroll_to_top = True
+                scroll_to_top()
                 st.session_state.scroll_to_question = None  # Clear question scroll when changing dimensions
                 st.rerun()
         else:
@@ -742,7 +742,7 @@ def render_navigation_buttons():
                         print(f"Error sending assessment completion email: {e}")
 
                 st.session_state.assessment_complete = True
-                st.session_state.should_scroll_to_top = True  # Scroll to top to show results
+                st.session_state.scroll_to_top = True  # Scroll to top to show results
                 st.rerun()
 
 
@@ -2115,7 +2115,7 @@ def main():
                     user_location=user_location if user_location else None)
 
                 st.session_state.user_info_collected = True
-                st.session_state.should_scroll_to_top = True  # Scroll to first question
+                st.session_state.scroll_to_top = True  # Scroll to first question
                 st.rerun()
 
         else:
