@@ -682,8 +682,8 @@ def render_navigation_buttons():
         if st.session_state.current_dimension > 0:
             if st.button("← Previous", type="secondary"):
                 st.session_state.current_dimension -= 1
-                st.session_state. = True
-                st.session_state.scroll_to_question = None  # Clear question scroll when changing dimensions
+                scroll_to_top()
+                st.session_state.scroll_to_question = None
                 st.rerun()
 
     with col2:
@@ -742,7 +742,7 @@ def render_navigation_buttons():
                         print(f"Error sending assessment completion email: {e}")
 
                 st.session_state.assessment_complete = True
-                st.session_state. = True  # Scroll to top to show results
+                scroll_to_top()  # Scroll to top to show results
                 st.rerun()
 
 
