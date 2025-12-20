@@ -704,7 +704,7 @@ def render_navigation_buttons():
         if st.session_state.current_dimension < len(DIMENSIONS) - 1:
             if st.button("Next →", type="primary"):
                 st.session_state.current_dimension += 1
-                ()
+                scroll_to_top()
                 st.session_state.scroll_to_question = None  # Clear question scroll when changing dimensions
                 st.rerun()
         else:
@@ -1277,7 +1277,7 @@ def render_results_dashboard():
         f'<h3 id="recommended-actions" style="color: {primary_color}; text-align: center; margin-top: 2rem;">🎯 Recommended Actions*</h3>',
         unsafe_allow_html=True)
     st.markdown(
-        '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem; font-size: 1.1rem;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
+        '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: bold;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
         unsafe_allow_html=True)
 
     # Analyze each dimension holistically
@@ -1418,7 +1418,8 @@ def render_results_dashboard():
     with col2:
         if st.button("📧 Request Assistance from T-Logic",
                      type="primary",
-                     use_container_width=True):
+                     use_container_width=True,
+                     key="request_assistance_top"):
             st.session_state.show_assistance_dialog = True
     
     # Assistance Request Dialog
@@ -1509,25 +1510,49 @@ def render_results_dashboard():
     # Action buttons
     st.markdown("---")
     
-    # Inject JavaScript to style buttons with lighter orange
+    # Inject CSS to style the three action buttons with custom colors, bold black text
     st.markdown("""
+    <style>
+    /* Style for all three action buttons - bold black text */
+    div[data-testid="column"] button[kind="primary"] {
+        font-weight: bold !important;
+        color: #000000 !important;
+    }
+    </style>
+    
     <script>
     setTimeout(function() {
         // Get all buttons on the page
         const buttons = document.querySelectorAll('button');
         buttons.forEach(button => {
-            // Check if this is a button on the results page that should be light orange
             const text = button.textContent || button.innerText;
-            if (text.includes('Retake Assessment') || 
-                text.includes('Download') || 
-                text.includes('Send Verification') ||
+            
+            // Request Assistance button - Light Blue
+            if (text.includes('Request Assistance')) {
+                button.style.backgroundColor = '#93C5FD';
+                button.style.color = '#000000';
+                button.style.fontWeight = 'bold';
+            }
+            // Retake Assessment button - Yellow
+            else if (text.includes('Retake Assessment')) {
+                button.style.backgroundColor = '#FDE047';
+                button.style.color = '#000000';
+                button.style.fontWeight = 'bold';
+            }
+            // Download HTML Report button - Light Green
+            else if (text.includes('Download HTML Report') || text.includes('Download Text Report')) {
+                button.style.backgroundColor = '#86EFAC';
+                button.style.color = '#000000';
+                button.style.fontWeight = 'bold';
+            }
+            // Other verification/form buttons - keep consistent styling
+            else if (text.includes('Send Verification') ||
                 text.includes('Verify & Download') ||
                 text.includes('Resend Code') ||
-                text.includes('Submit Feedback') ||
-                text.includes('Request Assistance')) {
-                // Apply lighter orange styling
+                text.includes('Submit Feedback')) {
                 button.style.backgroundColor = '#E8927C';
                 button.style.color = '#000000';
+                button.style.fontWeight = 'bold';
             }
         });
     }, 100);
@@ -1537,7 +1562,11 @@ def render_results_dashboard():
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col1:
-        if st.button("Retake Assessment", type="primary", use_container_width=True):
+        if st.button("📧 Request Assistance from T-Logic", type="primary", use_container_width=True):
+            st.session_state.show_assistance_dialog = True
+
+    with col2:
+        if st.button("🔄 Retake Assessment", type="primary", use_container_width=True):
             st.session_state.answers = {}
             st.session_state.current_dimension = 0
             st.session_state.assessment_complete = False
@@ -1546,13 +1575,10 @@ def render_results_dashboard():
             st.session_state.user_email = ""
             st.rerun()
 
-    with col2:
-        st.empty()
-    
     with col3:
-        if st.button("📄 Download Text Report", type="primary", use_container_width=True):
+        if st.button("📄 Download HTML Report", type="primary", use_container_width=True):
             st.session_state.show_email_verification = True
-            st.session_state.download_type = "text"
+            st.session_state.download_type = "html"
     
     # Email Verification Dialog for Report Download
     if st.session_state.get("show_email_verification", False):
