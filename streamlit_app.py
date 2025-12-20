@@ -256,7 +256,7 @@ def initialize_session_state():
     if 'company_name' not in st.session_state:
         st.session_state.company_name = "T-Logic"
     if 'primary_color' not in st.session_state:
-        st.session_state.primary_color = "#BF6A16"
+        st.session_state.primary_color = "#E07A5F"
     if 'user_name' not in st.session_state:
         st.session_state.user_name = ""
     if 'user_email' not in st.session_state:
@@ -271,7 +271,7 @@ def initialize_session_state():
         st.session_state.user_location = ""
     if 'user_info_collected' not in st.session_state:
         st.session_state.user_info_collected = False
-    if '' not in st.session_state:
+    if 'not in st.session_state:
         st.session_state. = False
     if 'feedback_submitted' not in st.session_state:
         st.session_state.feedback_submitted = False
