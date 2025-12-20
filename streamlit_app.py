@@ -271,8 +271,8 @@ def initialize_session_state():
         st.session_state.user_location = ""
     if 'user_info_collected' not in st.session_state:
         st.session_state.user_info_collected = False
-    if 'current page' not in st.session_state:
-        st.session_state. = False
+    if 'should_scroll_to_top' not in st.session_state:
+        st.session_state.should_scroll_to_top = False
     if 'feedback_submitted' not in st.session_state:
         st.session_state.feedback_submitted = False
     if 'chat_messages' not in st.session_state:
