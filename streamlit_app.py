@@ -1554,31 +1554,36 @@ def render_results_dashboard():
         st.empty()  # Empty middle column
     
     with col3:
-        if st.button("📧 Get HTML Report by Email", type="primary", use_container_width=True, key="get_report_email_btn"):
-            st.session_state.show_email_form = True
-    
-    # Email collection for report delivery
-    if st.session_state.get("show_email_form", False):
-        st.markdown("<br>", unsafe_allow_html=True)
+        # Get Report via Email button
+        if st.button("📧 Get Report via Email", type="primary", use_container_width=True, key="get_report_email_btn"):
+            st.session_state.show_email_input = True
         
-        # Simple email input
-        report_email = st.text_input(
-            "📧 Enter your email address to receive your report:",
-            value=st.session_state.user_email or "",
-            placeholder="your@email.com",
-            key="report_email_input"
-        )
-        
-        st.markdown(
-            '<p style="text-align: center; color: #9CA3AF; font-size: 0.9rem; margin-top: -0.5rem; margin-bottom: 1rem;">We respect your privacy. No spam, just your report and occasional AI insights.</p>',
-            unsafe_allow_html=True)
-        
-        col_submit, col_cancel = st.columns(2)
-        
-        with col_submit:
-            if st.button("📤 Send Report", type="primary", use_container_width=True, key="send_report_btn"):
+        # Email input appears directly below the button
+        if st.session_state.get("show_email_input", False):
+            # Email input with send button
+            email_col1, email_col2 = st.columns([4, 1])
+            
+            with email_col1:
+                report_email = st.text_input(
+                    "",
+                    value=st.session_state.user_email or "",
+                    placeholder="Enter your email address",
+                    key="report_email_input",
+                    label_visibility="collapsed"
+                )
+            
+            with email_col2:
+                send_clicked = st.button("📤", key="send_email_icon_btn", help="Send Report", use_container_width=True)
+            
+            # Privacy message right below email box
+            st.markdown(
+                '<p style="text-align: left; color: #9CA3AF; font-size: 0.85rem; margin-top: -0.5rem;">We respect your privacy. No spam.</p>',
+                unsafe_allow_html=True)
+            
+            # Handle send button click
+            if send_clicked:
                 if not report_email or not report_email.strip():
-                    st.error("Please enter a valid email address.")
+                    st.error("Please enter your email address.")
                 elif "@" not in report_email or "." not in report_email:
                     st.error("Please enter a valid email address.")
                 else:
@@ -1589,7 +1594,7 @@ def render_results_dashboard():
                         # Update email in session state
                         st.session_state.user_email = report_email.strip()
                         
-                        # Update the assessment record with email if we have an assessment_id
+                        # Update the assessment record with email
                         if hasattr(st.session_state, 'current_assessment_id'):
                             try:
                                 from db.operations import update_assessment_email
@@ -1624,22 +1629,22 @@ def render_results_dashboard():
                                 assessment_results=scores_data
                             )
                             
-                            # Show success message
-                            st.success("✅ We've sent your report via email! Check your inbox (and spam folder just in case).")
-                            
-                            # Clear the form
-                            st.session_state.show_email_form = False
+                            # Set success flag
+                            st.session_state.email_sent_successfully = True
+                            st.session_state.show_email_input = False
                             
                         except Exception as e:
-                            st.error(f"Unable to send email. Please try again or contact support. Error: {str(e)}")
+                            st.error(f"Unable to send email: {str(e)}")
                         
                     except Exception as e:
-                        st.error(f"Error generating report: {str(e)}")
-        
-        with col_cancel:
-            if st.button("Cancel", use_container_width=True, key="cancel_email_btn"):
-                st.session_state.show_email_form = False
-                st.rerun()
+                        st.error(f"Error: {str(e)}")
+    
+    # Success message at bottom center of page
+    if st.session_state.get("email_sent_successfully", False):
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown(
+            '<p style="text-align: center; color: #FFFFFF; font-weight: bold; font-size: 1.1rem;">✅ We\'ve sent your report via email! Check your inbox (and spam folder just in case).</p>',
+            unsafe_allow_html=True)
 
     # Feedback Section
     st.markdown("---")
