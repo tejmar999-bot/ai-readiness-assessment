@@ -23,8 +23,8 @@ def scroll_to_top():
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
-        """,
-        height=0,
+        """,        
+        height=0,        
     )
 # --- Compact, page-specific header for Dimension pages ---
 
@@ -38,7 +38,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
     Call this at the top of each Dimension page render.
     """
     # CSS - safe scoped class names so it doesn't affect other parts of the app.
-    css = """
+    css = """          
     <style>
     /* Container: compact header */
     .tlogic-dim-header {
@@ -478,13 +478,13 @@ def render_progress_bar():
             </div>
         </div>
         <div class="header-spacer"></div>
-        """,
-                unsafe_allow_html=True)
+        """,  
+                unsafe_allow_html=True)  
 
 
 def render_dimension_questions(dimension_idx):
     """Render questions for a specific dimension"""
-    ()
+    ()  
     
     dimension = DIMENSIONS[dimension_idx]
 
@@ -600,7 +600,7 @@ def render_dimension_questions(dimension_idx):
         # Create unique anchor for each question
         st.markdown(
             f'<div id="question-{i}" style="color: {dimension["color"]}; margin-bottom: -0.3rem;">{i+1}. {question["text"]}</div>',
-            unsafe_allow_html=True)
+            unsafe_allow_html=True)  
 
         # Get current answer or default
         current_answer = st.session_state.answers.get(question['id'], 3)
@@ -1277,7 +1277,7 @@ def render_results_dashboard():
         f'<h3 id="recommended-actions" style="color: {primary_color}; text-align: center; margin-top: 2rem;">🎯 Recommended Actions*</h3>',
         unsafe_allow_html=True)
     st.markdown(
-        '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: bold;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
+        '<p style="text-align: center; color: #FFFFFF; margin-bottom: 1.5rem; font-size: 1.1rem;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
         unsafe_allow_html=True)
 
     # Analyze each dimension holistically
@@ -1358,8 +1358,8 @@ def render_results_dashboard():
             ],
             'change': [
                 "Foster a culture of experimentation where failure is treated as a learning opportunity",
-                "Encourage cross-functional collaboration to break down departmental barriers",
-                "Develop frameworks for scaling successful AI pilots across the organization",
+                "Encourage cross-functional collaboration to break down departmental barriers",  
+                "Develop frameworks for scaling successful AI pilots across the organization",  
                 "Create feedback loops to continuously refine AI initiatives based on results",
                 "Build change management capacity to support AI-driven transformations"
             ]
@@ -1527,21 +1527,21 @@ def render_results_dashboard():
         buttons.forEach(button => {
             const text = button.textContent || button.innerText;
             
-            // Request Assistance button - Light Blue
+            // Request Assistance button - Soft Blue (#93C5FD is light blue-300)
             if (text.includes('Request Assistance')) {
-                button.style.backgroundColor = '#93C5FD';
+                button.style.backgroundColor = '#7DD3FC';  // Softer sky blue
                 button.style.color = '#000000';
                 button.style.fontWeight = 'bold';
             }
-            // Retake Assessment button - Yellow
+            // Retake Assessment button - Soft Yellow
             else if (text.includes('Retake Assessment')) {
-                button.style.backgroundColor = '#FDE047';
+                button.style.backgroundColor = '#FCD34D';  // Softer amber/yellow
                 button.style.color = '#000000';
                 button.style.fontWeight = 'bold';
             }
-            // Download HTML Report button - Light Green
+            // Download HTML Report button - Soft Green
             else if (text.includes('Download HTML Report') || text.includes('Download Text Report')) {
-                button.style.backgroundColor = '#86EFAC';
+                button.style.backgroundColor = '#6EE7B7';  // Softer emerald green
                 button.style.color = '#000000';
                 button.style.fontWeight = 'bold';
             }
@@ -1559,13 +1559,9 @@ def render_results_dashboard():
     </script>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        if st.button("📧 Request Assistance from T-Logic", type="primary", use_container_width=True):
-            st.session_state.show_assistance_dialog = True
-
-    with col2:
         if st.button("🔄 Retake Assessment", type="primary", use_container_width=True):
             st.session_state.answers = {}
             st.session_state.current_dimension = 0
@@ -1575,6 +1571,10 @@ def render_results_dashboard():
             st.session_state.user_email = ""
             st.rerun()
 
+    with col2:
+        if st.button("📧 Request Assistance from T-Logic", type="primary", use_container_width=True):
+            st.session_state.show_assistance_dialog = True
+    
     with col3:
         if st.button("📄 Download HTML Report", type="primary", use_container_width=True):
             st.session_state.show_email_verification = True
@@ -1737,18 +1737,18 @@ def render_results_dashboard():
     st.markdown("---")
     st.markdown(
         f'<h3 style="color: {primary_color}; text-align: center; margin-top: 2rem;">💬 Help Us Improve</h3>',
-        unsafe_allow_html=True)
+        unsafe_allow_html=True)  
     st.markdown(
         '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem;">We value your feedback! Please share your thoughts to help us improve this assessment tool.</p>',
-        unsafe_allow_html=True)
+        unsafe_allow_html=True)  
 
     if not st.session_state.feedback_submitted:
         feedback_text = st.text_area(
             "Your Feedback",
             placeholder=
             "What did you like? What could be improved? Any suggestions?",
-            height=120,
-            key="feedback_input")
+            height=120,  
+            key="feedback_input")  
 
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
@@ -1812,8 +1812,8 @@ def render_chatgpt_assistant():
                     <img src="data:image/png;base64,{image_to_base64(st.session_state.company_logo, max_height=40)}" 
                          style="width: 100%; height: auto; display: block;" />
                 </div>
-                """,
-                        unsafe_allow_html=True)
+                """,  
+                        unsafe_allow_html=True)  
 
     # Check if OpenAI API key is available
     if not os.environ.get("OPENAI_API_KEY"):
@@ -1838,16 +1838,16 @@ def render_chatgpt_assistant():
                         <strong style="color: {primary_color};">You:</strong><br>
                         <span style="color: #E07A5F;">{content}</span>
                     </div>
-                    """,
-                                unsafe_allow_html=True)
+                    """,    
+                                unsafe_allow_html=True)    
                 else:
                     st.markdown(f"""
                     <div style="background-color: #374151; padding: 1rem; margin: 0.5rem 0; border-radius: 0.5rem;">
                         <strong style="color: #10B981;">ChatGPT:</strong><br>
                         <span style="color: #E5E7EB;">{content}</span>
                     </div>
-                    """,
-                                unsafe_allow_html=True)
+                    """,  
+                                unsafe_allow_html=True)  
         else:
             st.info(
                 "👋 Welcome! I'm your AI assistant. Ask me anything about process improvement, AI strategy, or any general questions you have."
@@ -1865,13 +1865,13 @@ def render_chatgpt_assistant():
         user_message = st.text_input("Type your message",
                                      placeholder="Ask me anything...",
                                      value=st.session_state.chat_input_value,
-                                     key="standalone_chat_input",
+                                     key="standalone_chat_input",    
                                      label_visibility="collapsed")
     with col2:
         send_button = st.button("Send",
-                                type="primary",
+                                type="primary",    
                                 use_container_width=True,
-                                key="standalone_send")
+                                key="standalone_send")    
 
     if send_button and user_message and user_message.strip():
         # Add user message to chat
@@ -1880,7 +1880,7 @@ def render_chatgpt_assistant():
             'user',
             'content':
             user_message
-        })
+        })  
 
         # Get AI response
         with st.spinner("ChatGPT is thinking..."):
@@ -1891,14 +1891,14 @@ def render_chatgpt_assistant():
                 } for msg in st.session_state.standalone_chat_messages]
 
                 ai_response = get_chat_response(messages,
-                                                assessment_context=None)
+                                                assessment_context=None)  
 
                 st.session_state.standalone_chat_messages.append({
                     'role':
                     'assistant',
                     'content':
                     ai_response
-                })
+                })  
             except Exception as e:
                 st.session_state.standalone_chat_messages.append({
                     'role':
@@ -2067,7 +2067,7 @@ def main():
                 user_name = st.text_input("Name",
                                           value=st.session_state.user_name,
                                           placeholder="e.g., John Smith",
-                                          key="user_name_input")
+                                          key="user_name_input")  
             with col2:
                 st.markdown('<label style="font-size: 0.9rem; margin-bottom: 0.2rem; margin-top: -0.8rem; display: block;">Email <span style="color: red;">*</span></label>', unsafe_allow_html=True)
                 user_email = st.text_input(
@@ -2117,11 +2117,11 @@ def main():
                         });
                     })();
                 </script>
-                """,
-                            height=0)
+                """,      
+                            height=0)      
 
             if st.button("Continue",
-                         type="primary",
+                         type="primary",        
                          key="continue_button_home"):
                 # Save user info to session state
                 st.session_state.user_name = user_name
@@ -2193,8 +2193,8 @@ def main():
                 selected_stage = st.selectbox(
                     "Select your AI implementation stage:",
                     options=stage_options,
-                    index=None,
-                    key="stage_modal_selectbox"
+                    index=None,        
+                    key="stage_modal_selectbox"        
                 )
                 
                 if selected_stage:
@@ -2224,7 +2224,7 @@ def main():
             completed_questions = len([
                 q for q in get_all_questions()
                 if q['id'] in st.session_state.answers
-            ])
+            ])  
             total_questions = len(get_all_questions())
             st.write(
                 f"Questions completed: {completed_questions}/{total_questions}"
@@ -2252,5 +2252,5 @@ def main():
     render_footer()
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__":  
+    main()  
