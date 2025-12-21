@@ -23,8 +23,8 @@ def scroll_to_top():
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
-        """,        
-        height=0,        
+        """,
+        height=0,
     )
 # --- Compact, page-specific header for Dimension pages ---
 
@@ -38,7 +38,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
     Call this at the top of each Dimension page render.
     """
     # CSS - safe scoped class names so it doesn't affect other parts of the app.
-    css = """          
+    css = """
     <style>
     /* Container: compact header */
     .tlogic-dim-header {
@@ -214,7 +214,7 @@ button.continue-home-btn p {
 }
 </style>
 """,
-            unsafe_allow_html=True)
+            unsafe_allow_html=True)  
 
 
 def image_to_base64(image, max_height=None):
@@ -298,7 +298,7 @@ def render_header():
     with col1:
         st.markdown(
             f'<div class="main-header" style="color: {st.session_state.primary_color};">AI-Enabled Process Readiness</div>',
-            unsafe_allow_html=True)
+            unsafe_allow_html=True)  
         st.markdown(
             '<div class="sub-header">Quick self-assessment for process improvement leaders (6 dimensions, ~ 10 minutes)</div>',
             unsafe_allow_html=True)
@@ -478,13 +478,13 @@ def render_progress_bar():
             </div>
         </div>
         <div class="header-spacer"></div>
-        """,  
-                unsafe_allow_html=True)  
+        """,
+                unsafe_allow_html=True)
 
 
 def render_dimension_questions(dimension_idx):
     """Render questions for a specific dimension"""
-    ()  
+    ()
     
     dimension = DIMENSIONS[dimension_idx]
 
@@ -600,7 +600,7 @@ def render_dimension_questions(dimension_idx):
         # Create unique anchor for each question
         st.markdown(
             f'<div id="question-{i}" style="color: {dimension["color"]}; margin-bottom: -0.3rem;">{i+1}. {question["text"]}</div>',
-            unsafe_allow_html=True)  
+            unsafe_allow_html=True)
 
         # Get current answer or default
         current_answer = st.session_state.answers.get(question['id'], 3)
@@ -1358,8 +1358,8 @@ def render_results_dashboard():
             ],
             'change': [
                 "Foster a culture of experimentation where failure is treated as a learning opportunity",
-                "Encourage cross-functional collaboration to break down departmental barriers",  
-                "Develop frameworks for scaling successful AI pilots across the organization",  
+                "Encourage cross-functional collaboration to break down departmental barriers",
+                "Develop frameworks for scaling successful AI pilots across the organization",
                 "Create feedback loops to continuously refine AI initiatives based on results",
                 "Build change management capacity to support AI-driven transformations"
             ]
@@ -1737,18 +1737,18 @@ def render_results_dashboard():
     st.markdown("---")
     st.markdown(
         f'<h3 style="color: {primary_color}; text-align: center; margin-top: 2rem;">💬 Help Us Improve</h3>',
-        unsafe_allow_html=True)  
+        unsafe_allow_html=True)
     st.markdown(
         '<p style="text-align: center; color: #E07A5F; margin-bottom: 1.5rem;">We value your feedback! Please share your thoughts to help us improve this assessment tool.</p>',
-        unsafe_allow_html=True)  
+        unsafe_allow_html=True)
 
     if not st.session_state.feedback_submitted:
         feedback_text = st.text_area(
             "Your Feedback",
             placeholder=
             "What did you like? What could be improved? Any suggestions?",
-            height=120,  
-            key="feedback_input")  
+            height=120,
+            key="feedback_input")
 
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
@@ -1812,8 +1812,8 @@ def render_chatgpt_assistant():
                     <img src="data:image/png;base64,{image_to_base64(st.session_state.company_logo, max_height=40)}" 
                          style="width: 100%; height: auto; display: block;" />
                 </div>
-                """,  
-                        unsafe_allow_html=True)  
+                """,
+                        unsafe_allow_html=True)
 
     # Check if OpenAI API key is available
     if not os.environ.get("OPENAI_API_KEY"):
@@ -1838,16 +1838,16 @@ def render_chatgpt_assistant():
                         <strong style="color: {primary_color};">You:</strong><br>
                         <span style="color: #E07A5F;">{content}</span>
                     </div>
-                    """,    
-                                unsafe_allow_html=True)    
+                    """,
+                                unsafe_allow_html=True)
                 else:
                     st.markdown(f"""
                     <div style="background-color: #374151; padding: 1rem; margin: 0.5rem 0; border-radius: 0.5rem;">
                         <strong style="color: #10B981;">ChatGPT:</strong><br>
                         <span style="color: #E5E7EB;">{content}</span>
                     </div>
-                    """,  
-                                unsafe_allow_html=True)  
+                    """,
+                                unsafe_allow_html=True)
         else:
             st.info(
                 "👋 Welcome! I'm your AI assistant. Ask me anything about process improvement, AI strategy, or any general questions you have."
@@ -1865,13 +1865,13 @@ def render_chatgpt_assistant():
         user_message = st.text_input("Type your message",
                                      placeholder="Ask me anything...",
                                      value=st.session_state.chat_input_value,
-                                     key="standalone_chat_input",    
+                                     key="standalone_chat_input",
                                      label_visibility="collapsed")
     with col2:
         send_button = st.button("Send",
-                                type="primary",    
+                                type="primary",
                                 use_container_width=True,
-                                key="standalone_send")    
+                                key="standalone_send")
 
     if send_button and user_message and user_message.strip():
         # Add user message to chat
@@ -1880,7 +1880,7 @@ def render_chatgpt_assistant():
             'user',
             'content':
             user_message
-        })  
+        })
 
         # Get AI response
         with st.spinner("ChatGPT is thinking..."):
@@ -1891,14 +1891,14 @@ def render_chatgpt_assistant():
                 } for msg in st.session_state.standalone_chat_messages]
 
                 ai_response = get_chat_response(messages,
-                                                assessment_context=None)  
+                                                assessment_context=None)
 
                 st.session_state.standalone_chat_messages.append({
                     'role':
                     'assistant',
                     'content':
                     ai_response
-                })  
+                })
             except Exception as e:
                 st.session_state.standalone_chat_messages.append({
                     'role':
@@ -2067,7 +2067,7 @@ def main():
                 user_name = st.text_input("Name",
                                           value=st.session_state.user_name,
                                           placeholder="e.g., John Smith",
-                                          key="user_name_input")  
+                                          key="user_name_input")
             with col2:
                 st.markdown('<label style="font-size: 0.9rem; margin-bottom: 0.2rem; margin-top: -0.8rem; display: block;">Email <span style="color: red;">*</span></label>', unsafe_allow_html=True)
                 user_email = st.text_input(
@@ -2117,11 +2117,11 @@ def main():
                         });
                     })();
                 </script>
-                """,      
-                            height=0)      
+                """,  
+                            height=0)  
 
             if st.button("Continue",
-                         type="primary",        
+                         type="primary",  
                          key="continue_button_home"):
                 # Save user info to session state
                 st.session_state.user_name = user_name
@@ -2193,8 +2193,8 @@ def main():
                 selected_stage = st.selectbox(
                     "Select your AI implementation stage:",
                     options=stage_options,
-                    index=None,        
-                    key="stage_modal_selectbox"        
+                    index=None,  
+                    key="stage_modal_selectbox"  
                 )
                 
                 if selected_stage:
@@ -2224,7 +2224,7 @@ def main():
             completed_questions = len([
                 q for q in get_all_questions()
                 if q['id'] in st.session_state.answers
-            ])  
+            ])              
             total_questions = len(get_all_questions())
             st.write(
                 f"Questions completed: {completed_questions}/{total_questions}"
@@ -2252,5 +2252,5 @@ def main():
     render_footer()
 
 
-if __name__ == "__main__":  
-    main()  
+if __name__ == "__main__":
+    main()
