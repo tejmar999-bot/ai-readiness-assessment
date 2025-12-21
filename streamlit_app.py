@@ -1555,161 +1555,110 @@ def render_results_dashboard():
     
     with col3:
         if st.button("📄 Download HTML Report", type="primary", use_container_width=True, key="download_html_report"):
-            st.session_state.show_email_verification = True
-            st.session_state.download_type = "html"
+            st.session_state.show_download_dialog = True
     
-    # Email Verification Dialog for Report Download
-    if st.session_state.get("show_email_verification", False):
+    # Download Dialog - Optional Email Collection
+    if st.session_state.get("show_download_dialog", False):
         st.markdown("---")
         st.markdown(
-            f'<h4 style="color: {primary_color}; text-align: center;">📧 Verify Your Email</h4>',
+            f'<h4 style="color: {primary_color}; text-align: center;">📥 Download Your Report</h4>',
             unsafe_allow_html=True)
         st.markdown(
-            '<p style="text-align: center; color: #CC8866; margin-bottom: 1rem;">We need to verify your email before downloading your report.</p>',
+            '<p style="text-align: center; color: #FFFFFF; margin-bottom: 1rem;">Your comprehensive AI Readiness Report is ready!</p>',
             unsafe_allow_html=True)
         
-        # Initialize verification fields if not present
-        if 'verification_email' not in st.session_state:
-            st.session_state.verification_email = st.session_state.user_email or ""
-        if 'verification_code_sent' not in st.session_state:
-            st.session_state.verification_code_sent = False
-        if 'verification_code_expected' not in st.session_state:
-            st.session_state.verification_code_expected = ""
-        if 'verification_step' not in st.session_state:
-            st.session_state.verification_step = "email"  # email or code
-        if 'download_type' not in st.session_state:
-            st.session_state.download_type = "text"
+        # Optional email collection
+        download_email = st.text_input(
+            "📧 Email (optional - to receive AI readiness insights and updates)",
+            value=st.session_state.user_email or "",
+            placeholder="your@email.com",
+            key="download_email_input"
+        )
         
-        # Step 1: Enter email
-        if st.session_state.verification_step == "email":
-            # Allow user to modify the email
-            verification_email_input = st.text_input(
-                "Enter Your Email Address",
-                value=st.session_state.verification_email,
-                key="verification_email_input"
-            )
-            # Update session state with the current input value
-            if verification_email_input:
-                st.session_state.verification_email = verification_email_input
-            
-            col_send, col_cancel = st.columns(2)
-            with col_send:
-                if st.button("Send Verification Code", type="primary", use_container_width=True):
-                    if not st.session_state.verification_email.strip():
-                        st.error("Please enter your email address.")
-                    else:
-                        # Generate and send verification code
-                        verification_code = generate_verification_code()
-                        success, message = send_verification_code_email(
-                            st.session_state.verification_email,
-                            verification_code
-                        )
+        st.markdown(
+            '<p style="text-align: center; color: #9CA3AF; font-size: 0.9rem; margin-top: -0.5rem;">We respect your privacy. No spam, just valuable insights.</p>',
+            unsafe_allow_html=True)
+        
+        col_download, col_cancel = st.columns(2)
+        
+        with col_download:
+            if st.button("📥 Download Report", type="primary", use_container_width=True, key="confirm_download_btn"):
+                try:
+                    import base64
+                    from io import BytesIO
+                    
+                    # Update email in session state if provided
+                    if download_email and download_email.strip():
+                        st.session_state.user_email = download_email.strip()
                         
-                        if success:
-                            st.session_state.verification_code_expected = verification_code
-                            st.session_state.verification_step = "code"
-                            st.success(f"✅ Verification code sent to {st.session_state.verification_email}")
-                            st.rerun()
-                        else:
-                            st.error(f"Failed to send verification code: {message}")
-            
-            with col_cancel:
-                if st.button("Cancel", use_container_width=True):
-                    st.session_state.show_email_verification = False
-                    st.rerun()
-        
-        # Step 2: Enter verification code
-        elif st.session_state.verification_step == "code":
-            st.info(f"📧 Verification code sent to: {st.session_state.verification_email}")
-            
-            verification_code_entered = st.text_input(
-                "Enter the 6-digit verification code",
-                placeholder="000000",
-                key="verification_code_input",
-                max_chars=6
-            )
-            
-            col_verify, col_resend, col_cancel = st.columns(3)
-            
-            with col_verify:
-                if st.button("Verify & Download", type="primary", use_container_width=True):
-                    if not verification_code_entered:
-                        st.error("Please enter the verification code.")
-                    elif verification_code_entered != st.session_state.verification_code_expected:
-                        st.error("Invalid verification code. Please try again.")
-                    else:
-                        # Code is correct - generate HTML report and send to T-Logic
-                        try:
-                            import base64
-                            
-                            # Generate HTML report
-                            logo_b64 = None
-                            if st.session_state.company_logo is not None:
-                                from io import BytesIO
-                                buffered = BytesIO()
-                                st.session_state.company_logo.save(buffered, format="PNG")
-                                logo_b64 = base64.b64encode(buffered.getvalue()).decode()
-                            
-                            html_content = generate_html_report(
-                                scores_data,
-                                company_name=st.session_state.user_company,
-                                company_logo_b64=logo_b64,
-                                primary_color=st.session_state.primary_color
-                            )
-                            
-                            # Create download button for HTML
-                            filename = f"{st.session_state.user_company or 'Your Company'}_AI_Readiness_Report.html"
-                            
-                            st.success("✅ Email verified! Your report is ready.")
-                            
-                            # Use Streamlit's native download button
-                            st.download_button(
-                                label="📥 Download Report Now",
-                                data=html_content,
-                                file_name=filename,
-                                mime="text/html",
-                                use_container_width=True
-                            )
-                            
-                            # Send assessment results email to T-Logic
+                        # Update the assessment record with email if we have an assessment_id
+                        if hasattr(st.session_state, 'current_assessment_id'):
                             try:
-                                send_assessment_completion_email(
-                                    user_name=st.session_state.user_name or "Anonymous",
-                                    user_email=st.session_state.verification_email,
-                                    user_title=st.session_state.user_title or "",
-                                    user_company=st.session_state.user_company or "",
-                                    user_phone=st.session_state.user_phone or "",
-                                    user_location=st.session_state.user_location or "",
-                                    ai_stage=st.session_state.ai_implementation_stage or "Not provided",
-                                    assessment_results=scores_data
-                                )
+                                from db.operations import update_assessment_email
+                                update_assessment_email(st.session_state.current_assessment_id, download_email.strip())
                             except Exception as e:
-                                print(f"Error sending assessment email: {e}")
-                            
-                            # Reset state after successful generation
-                            st.session_state.show_email_verification = False
-                            st.session_state.verification_step = "email"
-                        except Exception as e:
-                            st.error(f"Error generating report: {str(e)}")
-            
-            with col_resend:
-                if st.button("Resend Code", use_container_width=True):
-                    verification_code = generate_verification_code()
-                    success, message = send_verification_code_email(
-                        st.session_state.verification_email,
-                        verification_code
+                                print(f"Note: Could not update email in database: {e}")
+                    
+                    # Generate HTML report
+                    logo_b64 = None
+                    if st.session_state.company_logo is not None:
+                        buffered = BytesIO()
+                        st.session_state.company_logo.save(buffered, format="PNG")
+                        logo_b64 = base64.b64encode(buffered.getvalue()).decode()
+                    
+                    html_content = generate_html_report(
+                        scores_data,
+                        company_name=st.session_state.user_company or "Your Organization",
+                        company_logo_b64=logo_b64,
+                        primary_color=st.session_state.primary_color
                     )
-                    if success:
-                        st.session_state.verification_code_expected = verification_code
-                        st.info("✅ New verification code sent!")
-                    else:
-                        st.error(f"Failed to resend code: {message}")
-            
-            with col_cancel:
-                if st.button("Cancel", use_container_width=True):
-                    st.session_state.show_email_verification = False
-                    st.session_state.verification_step = "email"
-                    st.rerun()
+                    
+                    # Create filename
+                    company_name = st.session_state.user_company or "Your_Company"
+                    safe_company_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '_')).rstrip()
+                    safe_company_name = safe_company_name.replace(' ', '_')
+                    filename = f"{safe_company_name}_AI_Readiness_Report.html"
+                    
+                    # Show download button
+                    st.success("✅ Report generated successfully!")
+                    
+                    st.download_button(
+                        label="📥 Click Here to Download Your Report",
+                        data=html_content,
+                        file_name=filename,
+                        mime="text/html",
+                        use_container_width=True,
+                        type="primary"
+                    )
+                    
+                    # Send notification email to T-Logic if user provided email
+                    if download_email and download_email.strip():
+                        try:
+                            send_assessment_completion_email(
+                                user_name=st.session_state.user_name or "Anonymous",
+                                user_email=download_email.strip(),
+                                user_title=st.session_state.user_title or "",
+                                user_company=st.session_state.user_company or "",
+                                user_phone=st.session_state.user_phone or "",
+                                user_location=st.session_state.user_location or "",
+                                ai_stage=st.session_state.ai_implementation_stage or "Not provided",
+                                assessment_results=scores_data
+                            )
+                            st.info("📧 We've sent you a copy via email!")
+                        except Exception as e:
+                            # Don't show error to user - email notification is optional
+                            print(f"Note: Could not send email notification: {e}")
+                    
+                    # Close dialog after a moment
+                    st.session_state.show_download_dialog = False
+                    
+                except Exception as e:
+                    st.error(f"Error generating report: {str(e)}")
+        
+        with col_cancel:
+            if st.button("Cancel", use_container_width=True, key="cancel_download_btn"):
+                st.session_state.show_download_dialog = False
+                st.rerun()
 
     # Feedback Section
     st.markdown("---")
