@@ -23,8 +23,8 @@ def scroll_to_top():
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
-        """,
-        height=0,
+        """,                                
+        height=0,                                
     )
 # --- Compact, page-specific header for Dimension pages ---
 
@@ -38,7 +38,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
     Call this at the top of each Dimension page render.
     """
     # CSS - safe scoped class names so it doesn't affect other parts of the app.
-    css = """
+    css = """                          
     <style>
     /* Container: compact header */
     .tlogic-dim-header {
@@ -214,7 +214,7 @@ button.continue-home-btn p {
 }
 </style>
 """,
-            unsafe_allow_html=True)  
+            unsafe_allow_html=True)
 
 
 def image_to_base64(image, max_height=None):
@@ -298,7 +298,7 @@ def render_header():
     with col1:
         st.markdown(
             f'<div class="main-header" style="color: {st.session_state.primary_color};">AI-Enabled Process Readiness</div>',
-            unsafe_allow_html=True)  
+            unsafe_allow_html=True)
         st.markdown(
             '<div class="sub-header">Quick self-assessment for process improvement leaders (6 dimensions, ~ 10 minutes)</div>',
             unsafe_allow_html=True)
@@ -1418,8 +1418,7 @@ def render_results_dashboard():
     with col2:
         if st.button("📧 Request Assistance from T-Logic",
                      type="primary",
-                     use_container_width=True,
-                     key="request_assistance_top"):
+                     use_container_width=True):
             st.session_state.show_assistance_dialog = True
     
     # Assistance Request Dialog
@@ -1527,7 +1526,7 @@ def render_results_dashboard():
         buttons.forEach(button => {
             const text = button.textContent || button.innerText;
             
-            // Request Assistance button - Soft Blue (#93C5FD is light blue-300)
+            // Request Assistance button - Soft Blue
             if (text.includes('Request Assistance')) {
                 button.style.backgroundColor = '#7DD3FC';  // Softer sky blue
                 button.style.color = '#000000';
@@ -2117,11 +2116,11 @@ def main():
                         });
                     })();
                 </script>
-                """,  
-                            height=0)  
+                """,
+                            height=0)
 
             if st.button("Continue",
-                         type="primary",  
+                         type="primary",
                          key="continue_button_home"):
                 # Save user info to session state
                 st.session_state.user_name = user_name
@@ -2193,8 +2192,8 @@ def main():
                 selected_stage = st.selectbox(
                     "Select your AI implementation stage:",
                     options=stage_options,
-                    index=None,  
-                    key="stage_modal_selectbox"  
+                    index=None,
+                    key="stage_modal_selectbox"
                 )
                 
                 if selected_stage:
@@ -2224,7 +2223,7 @@ def main():
             completed_questions = len([
                 q for q in get_all_questions()
                 if q['id'] in st.session_state.answers
-            ])              
+            ])        
             total_questions = len(get_all_questions())
             st.write(
                 f"Questions completed: {completed_questions}/{total_questions}"
