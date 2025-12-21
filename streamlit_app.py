@@ -23,13 +23,13 @@ def scroll_to_top():
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
-        """,                                
-        height=0,                                
+        """,                                                                                                                                                                                                                                                                                                                        
+        height=0,                                                                                                                                                                                                                                                                                                                  
     )
 # --- Compact, page-specific header for Dimension pages ---
 
 
-def render_dimension_header(title: str, description: str, idx: int, total: int = 6):
+def render_dimension_header(title: str, description: str, idx: int, total: int = 6):                                                                                                                                                                                                                          
     """
     Render a compact header for dimension pages:
       - title placed left, with description immediately to the right (same font sizes)
@@ -38,7 +38,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
     Call this at the top of each Dimension page render.
     """
     # CSS - safe scoped class names so it doesn't affect other parts of the app.
-    css = """                          
+    css = """                                                                              
     <style>
     /* Container: compact header */
     .tlogic-dim-header {
@@ -93,7 +93,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
         margin-left: 12px;
         line-height: 1;
     }
-
+  
     /* Responsive: if small width, allow description to truncate */
     @media (max-width: 880px) {
         .tlogic-dim-desc {
@@ -110,7 +110,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
     """
 
     # HTML markup for the header
-    html = f"""
+    html = f"""  
     {css}
     <div class="tlogic-dim-header" role="banner" aria-label="Dimension header">
       <div class="tlogic-dim-left">
@@ -213,8 +213,8 @@ button.continue-home-btn p {
     background-color: #EA580C;
 }
 </style>
-""",
-            unsafe_allow_html=True)
+""",      
+            unsafe_allow_html=True)      
 
 
 def image_to_base64(image, max_height=None):
@@ -255,8 +255,8 @@ def initialize_session_state():
             st.session_state.company_logo = None
     if 'company_name' not in st.session_state:
         st.session_state.company_name = "T-Logic"
-    if 'primary_color' not in st.session_state:
-        st.session_state.primary_color = "#E07A5F"
+    if 'primary_color' not in st.session_state:  
+        st.session_state.primary_color = "#E07A5F"  
     if 'user_name' not in st.session_state:
         st.session_state.user_name = ""
     if 'user_email' not in st.session_state:
@@ -266,8 +266,8 @@ def initialize_session_state():
     if 'user_company' not in st.session_state:
         st.session_state.user_company = ""
     if 'user_phone' not in st.session_state:
-        st.session_state.user_phone = ""
-    if 'user_location' not in st.session_state:
+        st.session_state.user_phone = ""  
+    if 'user_location' not in st.session_state:    
         st.session_state.user_location = ""
     if 'user_info_collected' not in st.session_state:
         st.session_state.user_info_collected = False
