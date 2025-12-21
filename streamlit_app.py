@@ -1414,11 +1414,23 @@ def render_results_dashboard():
         '<p style="text-align: center; color: #D97642; margin-bottom: 1rem;">Reach out to us by clicking here.</p>',
         unsafe_allow_html=True)
 
+    # Style the Request Assistance button with soft sky blue
+    st.markdown("""
+    <style>
+    button[key="request_assistance_top"] {
+        background-color: #7DD3FC !important;  /* Soft Sky Blue */
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("📧 Request Assistance from T-Logic",
                      type="primary",
-                     use_container_width=True):
+                     use_container_width=True,
+                     key="request_assistance_top"):
             st.session_state.show_assistance_dialog = True
     
     # Assistance Request Dialog
@@ -1509,48 +1521,27 @@ def render_results_dashboard():
     # Action buttons
     st.markdown("---")
     
-    # Inject JavaScript to style buttons with lighter orange
+    # CSS for button colors - two buttons only
     st.markdown("""
     <style>
-    div[data-testid="column"] button[kind="primary"] {
-        font-weight: bold !important;
+    /* Target specific buttons by their container position */
+    div[data-testid="column"]:nth-child(1) button {
+        background-color: #FCD34D !important;  /* Soft Amber for Retake */
         color: #000000 !important;
+        font-weight: bold !important;
+    }
+    div[data-testid="column"]:nth-child(3) button {
+        background-color: #6EE7B7 !important;  /* Soft Emerald for Download */
+        color: #000000 !important;
+        font-weight: bold !important;
     }
     </style>
-    <script>
-    setTimeout(function() {
-        const buttons = document.querySelectorAll('button');
-        buttons.forEach(button => {
-            const text = button.textContent || button.innerText;
-            if (text.includes('Request Assistance')) {
-                button.style.backgroundColor = '#7DD3FC';
-                button.style.color = '#000000';
-                button.style.fontWeight = 'bold';
-            }
-            else if (text.includes('Retake Assessment')) {
-                button.style.backgroundColor = '#FCD34D';
-                button.style.color = '#000000';
-                button.style.fontWeight = 'bold';
-            }
-            else if (text.includes('Download HTML Report') || text.includes('Download Text Report')) {
-                button.style.backgroundColor = '#6EE7B7';
-                button.style.color = '#000000';
-                button.style.fontWeight = 'bold';
-            }
-            else if (text.includes('Send Verification') || text.includes('Verify & Download') || text.includes('Resend Code') || text.includes('Submit Feedback')) {
-                button.style.backgroundColor = '#E8927C';
-                button.style.color = '#000000';
-                button.style.fontWeight = 'bold';
-            }
-        });
-    }, 100);
-    </script>
     """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        if st.button("🔄 Retake Assessment", type="primary", use_container_width=True):
+        if st.button("🔄 Retake Assessment", type="primary", use_container_width=True, key="retake_assessment_bottom"):
             st.session_state.answers = {}
             st.session_state.current_dimension = 0
             st.session_state.assessment_complete = False
@@ -1560,11 +1551,10 @@ def render_results_dashboard():
             st.rerun()
 
     with col2:
-        if st.button("📧 Request Assistance from T-Logic", type="primary", use_container_width=True):
-            st.session_state.show_assistance_dialog = True
+        st.empty()  # Empty middle column
     
     with col3:
-        if st.button("📄 Download HTML Report", type="primary", use_container_width=True):
+        if st.button("📄 Download HTML Report", type="primary", use_container_width=True, key="download_html_report"):
             st.session_state.show_email_verification = True
             st.session_state.download_type = "html"
     
