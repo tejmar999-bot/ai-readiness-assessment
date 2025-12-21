@@ -1554,89 +1554,68 @@ def render_results_dashboard():
         st.empty()  # Empty middle column
     
     with col3:
-        if st.button("📄 Download HTML Report", type="primary", use_container_width=True, key="download_html_report"):
-            st.session_state.show_download_dialog = True
+        if st.button("📧 Get HTML Report by Email", type="primary", use_container_width=True, key="get_report_email_btn"):
+            st.session_state.show_email_form = True
     
-    # Download Dialog - Optional Email Collection
-    if st.session_state.get("show_download_dialog", False):
-        st.markdown("---")
-        st.markdown(
-            f'<h4 style="color: {primary_color}; text-align: center;">📥 Download Your Report</h4>',
-            unsafe_allow_html=True)
-        st.markdown(
-            '<p style="text-align: center; color: #FFFFFF; margin-bottom: 1rem;">Your comprehensive AI Readiness Report is ready!</p>',
-            unsafe_allow_html=True)
+    # Email collection for report delivery
+    if st.session_state.get("show_email_form", False):
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # Optional email collection
-        download_email = st.text_input(
-            "📧 Email (optional - to receive AI readiness insights and updates)",
+        # Simple email input
+        report_email = st.text_input(
+            "📧 Enter your email address to receive your report:",
             value=st.session_state.user_email or "",
             placeholder="your@email.com",
-            key="download_email_input"
+            key="report_email_input"
         )
         
         st.markdown(
-            '<p style="text-align: center; color: #9CA3AF; font-size: 0.9rem; margin-top: -0.5rem;">We respect your privacy. No spam, just valuable insights.</p>',
+            '<p style="text-align: center; color: #9CA3AF; font-size: 0.9rem; margin-top: -0.5rem; margin-bottom: 1rem;">We respect your privacy. No spam, just your report and occasional AI insights.</p>',
             unsafe_allow_html=True)
         
-        col_download, col_cancel = st.columns(2)
+        col_submit, col_cancel = st.columns(2)
         
-        with col_download:
-            if st.button("📥 Download Report", type="primary", use_container_width=True, key="confirm_download_btn"):
-                try:
-                    import base64
-                    from io import BytesIO
-                    
-                    # Update email in session state if provided
-                    if download_email and download_email.strip():
-                        st.session_state.user_email = download_email.strip()
+        with col_submit:
+            if st.button("📤 Send Report", type="primary", use_container_width=True, key="send_report_btn"):
+                if not report_email or not report_email.strip():
+                    st.error("Please enter a valid email address.")
+                elif "@" not in report_email or "." not in report_email:
+                    st.error("Please enter a valid email address.")
+                else:
+                    try:
+                        import base64
+                        from io import BytesIO
+                        
+                        # Update email in session state
+                        st.session_state.user_email = report_email.strip()
                         
                         # Update the assessment record with email if we have an assessment_id
                         if hasattr(st.session_state, 'current_assessment_id'):
                             try:
                                 from db.operations import update_assessment_email
-                                update_assessment_email(st.session_state.current_assessment_id, download_email.strip())
+                                update_assessment_email(st.session_state.current_assessment_id, report_email.strip())
                             except Exception as e:
                                 print(f"Note: Could not update email in database: {e}")
-                    
-                    # Generate HTML report
-                    logo_b64 = None
-                    if st.session_state.company_logo is not None:
-                        buffered = BytesIO()
-                        st.session_state.company_logo.save(buffered, format="PNG")
-                        logo_b64 = base64.b64encode(buffered.getvalue()).decode()
-                    
-                    html_content = generate_html_report(
-                        scores_data,
-                        company_name=st.session_state.user_company or "Your Organization",
-                        company_logo_b64=logo_b64,
-                        primary_color=st.session_state.primary_color
-                    )
-                    
-                    # Create filename
-                    company_name = st.session_state.user_company or "Your_Company"
-                    safe_company_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '_')).rstrip()
-                    safe_company_name = safe_company_name.replace(' ', '_')
-                    filename = f"{safe_company_name}_AI_Readiness_Report.html"
-                    
-                    # Show download button
-                    st.success("✅ Report generated successfully!")
-                    
-                    st.download_button(
-                        label="📥 Click Here to Download Your Report",
-                        data=html_content,
-                        file_name=filename,
-                        mime="text/html",
-                        use_container_width=True,
-                        type="primary"
-                    )
-                    
-                    # Send notification email to T-Logic if user provided email
-                    if download_email and download_email.strip():
+                        
+                        # Generate HTML report
+                        logo_b64 = None
+                        if st.session_state.company_logo is not None:
+                            buffered = BytesIO()
+                            st.session_state.company_logo.save(buffered, format="PNG")
+                            logo_b64 = base64.b64encode(buffered.getvalue()).decode()
+                        
+                        html_content = generate_html_report(
+                            scores_data,
+                            company_name=st.session_state.user_company or "Your Organization",
+                            company_logo_b64=logo_b64,
+                            primary_color=st.session_state.primary_color
+                        )
+                        
+                        # Send email with report
                         try:
                             send_assessment_completion_email(
-                                user_name=st.session_state.user_name or "Anonymous",
-                                user_email=download_email.strip(),
+                                user_name=st.session_state.user_name or "Valued User",
+                                user_email=report_email.strip(),
                                 user_title=st.session_state.user_title or "",
                                 user_company=st.session_state.user_company or "",
                                 user_phone=st.session_state.user_phone or "",
@@ -1644,20 +1623,22 @@ def render_results_dashboard():
                                 ai_stage=st.session_state.ai_implementation_stage or "Not provided",
                                 assessment_results=scores_data
                             )
-                            st.info("📧 We've sent you a copy via email!")
+                            
+                            # Show success message
+                            st.success("✅ We've sent your report via email! Check your inbox (and spam folder just in case).")
+                            
+                            # Clear the form
+                            st.session_state.show_email_form = False
+                            
                         except Exception as e:
-                            # Don't show error to user - email notification is optional
-                            print(f"Note: Could not send email notification: {e}")
-                    
-                    # Close dialog after a moment
-                    st.session_state.show_download_dialog = False
-                    
-                except Exception as e:
-                    st.error(f"Error generating report: {str(e)}")
+                            st.error(f"Unable to send email. Please try again or contact support. Error: {str(e)}")
+                        
+                    except Exception as e:
+                        st.error(f"Error generating report: {str(e)}")
         
         with col_cancel:
-            if st.button("Cancel", use_container_width=True, key="cancel_download_btn"):
-                st.session_state.show_download_dialog = False
+            if st.button("Cancel", use_container_width=True, key="cancel_email_btn"):
+                st.session_state.show_email_form = False
                 st.rerun()
 
     # Feedback Section
