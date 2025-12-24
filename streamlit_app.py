@@ -2055,14 +2055,8 @@ def main():
                 st.session_state.user_phone = user_phone
                 st.session_state.user_location = user_location
 
-                # Send registration email to T-Logic
-                send_user_registration_email(
-                    user_name=user_name,
-                    user_email=user_email,
-                    user_title=user_title if user_title else None,
-                    user_company=user_company if user_company else None,
-                    user_phone=user_phone if user_phone else None,
-                    user_location=user_location if user_location else None)
+                # User info collected - proceed to assessment
+                # (Email will be sent when they complete and request report)
 
                 st.session_state.user_info_collected = True
                 st.session_state.scroll_to_top = True  # Scroll to first question
