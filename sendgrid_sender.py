@@ -1,0 +1,278 @@
+"""
+SendGrid Email Sender for AI Readiness Assessment
+Simple, reliable email delivery using SendGrid API
+"""
+
+import streamlit as st
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content, Attachment, FileContent, FileName, FileType, Disposition
+import base64
+
+
+def send_assessment_report_email(
+    recipient_email: str,
+    recipient_name: str,
+    html_report: str,
+    scores_data: dict,
+    company_name: str = "Your Organization"
+):
+    """
+    Send HTML assessment report via email using SendGrid
+    
+    Args:
+        recipient_email: Recipient's email address
+        recipient_name: Recipient's name
+        html_report: HTML content of the report
+        scores_data: Dictionary with assessment scores
+        company_name: Name of the company/organization
+    
+    Returns:
+        tuple: (success: bool, message: str)
+    """
+    try:
+        # Get SendGrid credentials from Streamlit secrets
+        api_key = st.secrets["sendgrid"]["api_key"]
+        sender_email = st.secrets["sendgrid"]["sender_email"]
+        sender_name = st.secrets["sendgrid"]["sender_name"]
+        
+        # Get total score
+        total_score = scores_data.get('total_score', 0)
+        
+        # Create email subject
+        subject = f"Your AI Readiness Assessment Results - Score: {total_score}/90"
+        
+        # Create email body (plain text version)
+        plain_text = f"""
+Hi {recipient_name},
+
+Thank you for completing the AI Readiness Assessment!
+
+Your Organization: {company_name}
+Total AI Readiness Score: {total_score}/90
+
+Your comprehensive HTML report is attached to this email. Open it in any browser to view:
+• Detailed breakdown across 6 dimensions
+• Personalized recommendations
+• Industry benchmark comparisons
+• Visual score charts
+
+Key Scores:
+• Process Maturity: {scores_data.get('dimension_1_score', 0)}/15
+• Technology Infrastructure: {scores_data.get('dimension_2_score', 0)}/15
+• Data Readiness: {scores_data.get('dimension_3_score', 0)}/15
+• People & Culture: {scores_data.get('dimension_4_score', 0)}/15
+• Leadership & Alignment: {scores_data.get('dimension_5_score', 0)}/15
+• Change Management: {scores_data.get('dimension_6_score', 0)}/15
+
+Questions or want to discuss your results?
+Reply to this email or schedule a consultation at www.tlogicconsulting.com
+
+Best regards,
+{sender_name}
+        """
+        
+        # Create HTML email body
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; }}
+        .score-box {{ background: #f0f9ff; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center; }}
+        .score-box h2 {{ color: #1e3a8a; margin: 0 0 10px 0; font-size: 36px; }}
+        .dimensions {{ background: white; padding: 20px; }}
+        .dimension {{ margin: 15px 0; padding: 10px; background: #f9fafb; border-radius: 5px; }}
+        .dimension strong {{ color: #1e3a8a; }}
+        .footer {{ background: #f3f4f6; padding: 20px; text-align: center; margin-top: 30px; border-radius: 0 0 10px 10px; }}
+        .button {{ display: inline-block; background: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 10px 0; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Your AI Readiness Assessment Results</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">{company_name}</p>
+        </div>
+        
+        <div class="score-box">
+            <p style="margin: 0; color: #6b7280; font-size: 14px;">TOTAL AI READINESS SCORE</p>
+            <h2>{total_score}/90</h2>
+            <p style="margin: 0; color: #6b7280;">Your comprehensive report is attached below</p>
+        </div>
+        
+        <div class="dimensions">
+            <h3 style="color: #1e3a8a;">Your Dimension Scores:</h3>
+            
+            <div class="dimension">
+                <strong>Process Maturity:</strong> {scores_data.get('dimension_1_score', 0)}/15
+            </div>
+            <div class="dimension">
+                <strong>Technology Infrastructure:</strong> {scores_data.get('dimension_2_score', 0)}/15
+            </div>
+            <div class="dimension">
+                <strong>Data Readiness:</strong> {scores_data.get('dimension_3_score', 0)}/15
+            </div>
+            <div class="dimension">
+                <strong>People & Culture:</strong> {scores_data.get('dimension_4_score', 0)}/15
+            </div>
+            <div class="dimension">
+                <strong>Leadership & Alignment:</strong> {scores_data.get('dimension_5_score', 0)}/15
+            </div>
+            <div class="dimension">
+                <strong>Change Management:</strong> {scores_data.get('dimension_6_score', 0)}/15
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <p><strong>📎 Your detailed HTML report is attached to this email.</strong></p>
+            <p style="color: #6b7280;">Open it in any browser to view interactive charts and personalized recommendations.</p>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0 0 10px 0;"><strong>Want to discuss your results?</strong></p>
+            <p style="margin: 0; color: #6b7280;">Reply to this email or visit www.tlogicconsulting.com</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        # Create the email message
+        message = Mail(
+            from_email=Email(sender_email, sender_name),
+            to_emails=To(recipient_email, recipient_name),
+            subject=subject,
+            plain_text_content=Content("text/plain", plain_text),
+            html_content=Content("text/html", html_content)
+        )
+        
+        # Attach the HTML report
+        # Create safe filename
+        safe_company = "".join(c for c in company_name if c.isalnum() or c in (' ', '_')).rstrip()
+        safe_company = safe_company.replace(' ', '_') or "Your_Company"
+        filename = f"{safe_company}_AI_Readiness_Report.html"
+        
+        # Encode HTML report in base64
+        encoded_report = base64.b64encode(html_report.encode()).decode()
+        
+        # Create attachment
+        attached_file = Attachment(
+            FileContent(encoded_report),
+            FileName(filename),
+            FileType('text/html'),
+            Disposition('attachment')
+        )
+        message.attachment = attached_file
+        
+        # Send email via SendGrid
+        sg = SendGridAPIClient(api_key)
+        response = sg.send(message)
+        
+        # Check response
+        if response.status_code in [200, 201, 202]:
+            return True, f"Report sent successfully to {recipient_email}"
+        else:
+            return False, f"SendGrid returned status code: {response.status_code}"
+            
+    except KeyError as e:
+        return False, f"Missing SendGrid configuration in secrets: {str(e)}"
+    except Exception as e:
+        return False, f"Error sending email: {str(e)}"
+
+
+def send_notification_to_tlogic(
+    user_name: str,
+    user_email: str,
+    user_company: str,
+    scores_data: dict,
+    user_title: str = "",
+    user_phone: str = "",
+    user_location: str = "",
+    ai_stage: str = ""
+):
+    """
+    Send notification to T-Logic team when someone completes assessment
+    
+    Returns:
+        tuple: (success: bool, message: str)
+    """
+    try:
+        # Get SendGrid credentials
+        api_key = st.secrets["sendgrid"]["api_key"]
+        sender_email = st.secrets["sendgrid"]["sender_email"]
+        sender_name = st.secrets["sendgrid"]["sender_name"]
+        
+        # T-Logic notification email (you can change this)
+        tlogic_email = sender_email  # Send to yourself
+        
+        total_score = scores_data.get('total_score', 0)
+        
+        subject = f"New Assessment Completed: {user_name} from {user_company} - Score: {total_score}"
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #1e3a8a; color: white; padding: 20px; }}
+        .info {{ background: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px; }}
+        .scores {{ background: white; padding: 15px; border: 1px solid #e5e7eb; border-radius: 5px; }}
+        .score-item {{ padding: 8px; margin: 5px 0; background: #f9fafb; border-radius: 3px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🎯 New Assessment Completed!</h2>
+        </div>
+        
+        <div class="info">
+            <h3>Contact Information:</h3>
+            <p><strong>Name:</strong> {user_name}</p>
+            <p><strong>Email:</strong> {user_email}</p>
+            <p><strong>Company:</strong> {user_company}</p>
+            <p><strong>Title:</strong> {user_title or 'Not provided'}</p>
+            <p><strong>Phone:</strong> {user_phone or 'Not provided'}</p>
+            <p><strong>Location:</strong> {user_location or 'Not provided'}</p>
+            <p><strong>AI Stage:</strong> {ai_stage or 'Not provided'}</p>
+        </div>
+        
+        <div class="scores">
+            <h3>Assessment Scores:</h3>
+            <div class="score-item"><strong>Total Score:</strong> {total_score}/90</div>
+            <div class="score-item">Process Maturity: {scores_data.get('dimension_1_score', 0)}/15</div>
+            <div class="score-item">Technology: {scores_data.get('dimension_2_score', 0)}/15</div>
+            <div class="score-item">Data Readiness: {scores_data.get('dimension_3_score', 0)}/15</div>
+            <div class="score-item">People & Culture: {scores_data.get('dimension_4_score', 0)}/15</div>
+            <div class="score-item">Leadership: {scores_data.get('dimension_5_score', 0)}/15</div>
+            <div class="score-item">Change Management: {scores_data.get('dimension_6_score', 0)}/15</div>
+        </div>
+        
+        <p style="margin-top: 20px; color: #6b7280;">Follow up with this lead!</p>
+    </div>
+</body>
+</html>
+        """
+        
+        message = Mail(
+            from_email=Email(sender_email, sender_name),
+            to_emails=To(tlogic_email),
+            subject=subject,
+            html_content=Content("text/html", html_content)
+        )
+        
+        sg = SendGridAPIClient(api_key)
+        response = sg.send(message)
+        
+        if response.status_code in [200, 201, 202]:
+            return True, "Notification sent to T-Logic"
+        else:
+            return False, f"Status code: {response.status_code}"
+            
+    except Exception as e:
+        return False, f"Error: {str(e)}"
