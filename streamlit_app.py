@@ -14,12 +14,16 @@ from data.benchmarks import get_benchmark_comparison, get_all_benchmarks, get_be
 from db.operations import (ensure_tables_exist, save_assessment)
 from utils.gmail_sender import send_assistance_request_email, send_feedback_email
 # Use SendGrid for report delivery
+import sys
+import os
+# Add current directory to path for sendgrid_sender import
+sys.path.insert(0, os.path.dirname(__file__))
 try:
     from sendgrid_sender import send_assessment_report_email, send_notification_to_tlogic
     SENDGRID_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     SENDGRID_AVAILABLE = False
-    print("SendGrid not available - email sending will be disabled")
+    print(f"SendGrid not available - email sending will be disabled. Error: {e}")
 from utils.scoring import generate_executive_summary
 from utils.ai_chat import get_chat_response, get_assessment_insights
 
