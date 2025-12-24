@@ -12,7 +12,14 @@ from utils.pdf_generator import generate_pdf_report
 from utils.html_report_generator import generate_html_report
 from data.benchmarks import get_benchmark_comparison, get_all_benchmarks, get_benchmark_data
 from db.operations import (ensure_tables_exist, save_assessment)
-from utils.gmail_sender import send_assistance_request_email, send_feedback_email, send_user_registration_email, send_verification_code_email, send_pdf_download_notification, generate_verification_code, send_assessment_completion_email
+from utils.gmail_sender import send_assistance_request_email, send_feedback_email
+# Use SendGrid for report delivery
+try:
+    from sendgrid_sender import send_assessment_report_email, send_notification_to_tlogic
+    SENDGRID_AVAILABLE = True
+except ImportError:
+    SENDGRID_AVAILABLE = False
+    print("SendGrid not available - email sending will be disabled")
 from utils.scoring import generate_executive_summary
 from utils.ai_chat import get_chat_response, get_assessment_insights
 
@@ -725,21 +732,8 @@ def render_navigation_buttons():
                 except Exception as e:
                     st.error(f"Error saving assessment: {str(e)}")
 
-                # Send assessment completion email to T-Logic if user provided email
-                if st.session_state.user_email:
-                    try:
-                        send_assessment_completion_email(
-                            user_name=st.session_state.user_name or "Anonymous",
-                            user_email=st.session_state.user_email,
-                            user_title=st.session_state.user_title or "",
-                            user_company=st.session_state.user_company or "",
-                            user_phone=st.session_state.user_phone or "",
-                            user_location=st.session_state.user_location or "",
-                            ai_stage=st.session_state.ai_implementation_stage or "Not provided",
-                            assessment_results=scores_data
-                        )
-                    except Exception as e:
-                        print(f"Error sending assessment completion email: {e}")
+                # Don't send email at completion - send when user requests report
+                # This way we only send email with actual report attached
 
                 st.session_state.assessment_complete = True
                 scroll_to_top()  # Scroll to top to show results
@@ -1616,25 +1610,42 @@ def render_results_dashboard():
                             primary_color=st.session_state.primary_color
                         )
                         
-                        # Send email with report
-                        try:
-                            send_assessment_completion_email(
-                                user_name=st.session_state.user_name or "Valued User",
-                                user_email=report_email.strip(),
-                                user_title=st.session_state.user_title or "",
-                                user_company=st.session_state.user_company or "",
-                                user_phone=st.session_state.user_phone or "",
-                                user_location=st.session_state.user_location or "",
-                                ai_stage=st.session_state.ai_implementation_stage or "Not provided",
-                                assessment_results=scores_data
-                            )
-                            
-                            # Set success flag
-                            st.session_state.email_sent_successfully = True
-                            st.session_state.show_email_input = False
-                            
-                        except Exception as e:
-                            st.error(f"Unable to send email: {str(e)}")
+                        # Send email with report using SendGrid
+                        if SENDGRID_AVAILABLE:
+                            try:
+                                # Send report to user
+                                success, message = send_assessment_report_email(
+                                    recipient_email=report_email.strip(),
+                                    recipient_name=st.session_state.user_name or "Valued User",
+                                    html_report=html_content,
+                                    scores_data=scores_data,
+                                    company_name=st.session_state.user_company or "Your Organization"
+                                )
+                                
+                                if success:
+                                    # Send notification to T-Logic
+                                    send_notification_to_tlogic(
+                                        user_name=st.session_state.user_name or "Anonymous",
+                                        user_email=report_email.strip(),
+                                        user_company=st.session_state.user_company or "",
+                                        scores_data=scores_data,
+                                        user_title=st.session_state.user_title or "",
+                                        user_phone=st.session_state.user_phone or "",
+                                        user_location=st.session_state.user_location or "",
+                                        ai_stage=st.session_state.ai_implementation_stage or "Not provided"
+                                    )
+                                    
+                                    # Set success flag
+                                    st.session_state.email_sent_successfully = True
+                                    st.session_state.show_email_input = False
+                                    st.rerun()
+                                else:
+                                    st.error(f"Unable to send email: {message}")
+                                    
+                            except Exception as e:
+                                st.error(f"Email error: {str(e)}")
+                        else:
+                            st.error("Email service not configured. Please contact support.")
                         
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
