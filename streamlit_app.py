@@ -8,7 +8,6 @@ from io import BytesIO
 from PIL import Image
 from utils.scoring import compute_scores
 from data.dimensions import DIMENSIONS, BRIGHT_PALETTE, get_all_questions
-from utils.pdf_generator import generate_pdf_report
 from utils.html_report_generator import generate_html_report
 from data.benchmarks import get_benchmark_comparison, get_all_benchmarks, get_benchmark_data
 from db.operations import (ensure_tables_exist, save_assessment)
