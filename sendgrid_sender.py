@@ -2,12 +2,134 @@
 SendGrid Email Sender for AI Readiness Assessment
 Simple, reliable email delivery using SendGrid API
 """
-
 import streamlit as st
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content, Attachment, FileContent, FileName, FileType, Disposition
 import base64
 
+def send_assistance_request_email(
+    user_name: str,
+    user_email: str,
+    user_company: str,
+    message: str,
+    user_phone: str = "",
+    user_title: str = ""
+):
+    """
+    Send assistance request from user to T-Logic team via SendGrid
+    
+    Args:
+        user_name: Name of person requesting assistance
+        user_email: Their email address
+        user_company: Their company name
+        message: Their assistance request message
+        user_phone: Optional phone number
+        user_title: Optional job title
+    
+    Returns:
+        tuple: (success: bool, message: str)
+    """
+    try:
+        # Get SendGrid credentials from secrets
+        api_key = st.secrets["sendgrid"]["api_key"]
+        sender_email = st.secrets["sendgrid"]["sender_email"]
+        sender_name = st.secrets["sendgrid"]["sender_name"]
+        
+        # Email to T-Logic
+        tlogic_email = sender_email  # Send to yourself
+        
+        # Create subject
+        subject = f"🆘 Assistance Request from {user_name} - {user_company}"
+        
+        # Create HTML email content
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .content {{ background: white; padding: 20px; border: 1px solid #e5e7eb; }}
+        .info-section {{ background: #f9fafb; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }}
+        .message-section {{ background: #fef3c7; padding: 15px; margin: 15px 0; border-left: 4px solid #f59e0b; border-radius: 4px; }}
+        .label {{ font-weight: bold; color: #1e3a8a; }}
+        .footer {{ background: #f3f4f6; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; color: #6b7280; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🆘 Assistance Request Received</h2>
+        </div>
+        
+        <div class="content">
+            <div class="info-section">
+                <h3 style="margin-top: 0; color: #1e3a8a;">Contact Information:</h3>
+                <p><span class="label">Name:</span> {user_name}</p>
+                <p><span class="label">Email:</span> {user_email}</p>
+                <p><span class="label">Company:</span> {user_company}</p>
+                <p><span class="label">Title:</span> {user_title or 'Not provided'}</p>
+                <p><span class="label">Phone:</span> {user_phone or 'Not provided'}</p>
+            </div>
+            
+            <div class="message-section">
+                <h3 style="margin-top: 0; color: #f59e0b;">Their Message:</h3>
+                <p style="white-space: pre-wrap;">{message}</p>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #e0f2fe; border-radius: 4px;">
+                <p style="margin: 0;"><strong>⚡ Action Required:</strong> Please respond to this assistance request promptly!</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0;">AI Readiness Assessment Platform</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px;">Automated notification from Streamlit app</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        # Create plain text version
+        plain_text = f"""
+ASSISTANCE REQUEST RECEIVED
+
+Contact Information:
+Name: {user_name}
+Email: {user_email}
+Company: {user_company}
+Title: {user_title or 'Not provided'}
+Phone: {user_phone or 'Not provided'}
+
+Their Message:
+{message}
+
+Please respond to this assistance request promptly!
+        """
+        
+        # Create and send email
+        message = Mail(
+            from_email=Email(sender_email, sender_name),
+            to_emails=To(tlogic_email),
+            subject=subject,
+            plain_text_content=Content("text/plain", plain_text),
+            html_content=Content("text/html", html_content)
+        )
+        
+        sg = SendGridAPIClient(api_key)
+        response = sg.send(message)
+        
+        if response.status_code in [200, 201, 202]:
+            return True, f"Assistance request sent successfully to {tlogic_email}"
+        else:
+            return False, f"SendGrid returned status code: {response.status_code}"
+            
+    except KeyError as e:
+        return False, f"Missing SendGrid configuration in secrets: {str(e)}"
+    except Exception as e:
+        return False, f"Error sending assistance request: {str(e)}"
 
 def send_assessment_report_email(
     recipient_email: str,
@@ -276,3 +398,124 @@ def send_notification_to_tlogic(
             
     except Exception as e:
         return False, f"Error: {str(e)}"
+
+def send_feedback_email(
+    user_name: str,
+    user_email: str,
+    feedback_text: str,
+    rating: str = "",
+    user_company: str = ""
+):
+    """
+    Send user feedback to T-Logic team via SendGrid
+    
+    Args:
+        user_name: Name of person providing feedback
+        user_email: Their email address
+        feedback_text: The feedback message
+        rating: Optional rating (e.g., "5/5 stars")
+        user_company: Optional company name
+    
+    Returns:
+        tuple: (success: bool, message: str)
+    """
+    try:
+        # Get SendGrid credentials from secrets
+        api_key = st.secrets["sendgrid"]["api_key"]
+        sender_email = st.secrets["sendgrid"]["sender_email"]
+        sender_name = st.secrets["sendgrid"]["sender_name"]
+        
+        # Email to T-Logic
+        tlogic_email = sender_email  # Send to yourself
+        
+        # Create subject
+        subject = f"💬 Feedback from {user_name}" + (f" - {user_company}" if user_company else "")
+        
+        # Create HTML email content
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #8b5cf6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .content {{ background: white; padding: 20px; border: 1px solid #e5e7eb; }}
+        .info-section {{ background: #f9fafb; padding: 15px; margin: 15px 0; border-left: 4px solid #8b5cf6; border-radius: 4px; }}
+        .feedback-section {{ background: #f0f9ff; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }}
+        .rating {{ font-size: 24px; color: #f59e0b; }}
+        .label {{ font-weight: bold; color: #1e3a8a; }}
+        .footer {{ background: #f3f4f6; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; color: #6b7280; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>💬 User Feedback Received</h2>
+        </div>
+        
+        <div class="content">
+            <div class="info-section">
+                <h3 style="margin-top: 0; color: #8b5cf6;">From:</h3>
+                <p><span class="label">Name:</span> {user_name}</p>
+                <p><span class="label">Email:</span> {user_email}</p>
+                {f'<p><span class="label">Company:</span> {user_company}</p>' if user_company else ''}
+                {f'<p class="rating"><span class="label">Rating:</span> {rating}</p>' if rating else ''}
+            </div>
+            
+            <div class="feedback-section">
+                <h3 style="margin-top: 0; color: #3b82f6;">Feedback:</h3>
+                <p style="white-space: pre-wrap;">{feedback_text}</p>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #f0fdf4; border-radius: 4px;">
+                <p style="margin: 0;"><strong>💡 Great!</strong> User feedback helps improve the assessment experience.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0;">AI Readiness Assessment Platform</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px;">Automated notification from Streamlit app</p>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        # Create plain text version
+        plain_text = f"""
+USER FEEDBACK RECEIVED
+
+From:
+Name: {user_name}
+Email: {user_email}
+{f'Company: {user_company}' if user_company else ''}
+{f'Rating: {rating}' if rating else ''}
+
+Feedback:
+{feedback_text}
+
+User feedback helps improve the assessment experience.
+        """
+        
+        # Create and send email
+        message = Mail(
+            from_email=Email(sender_email, sender_name),
+            to_emails=To(tlogic_email),
+            subject=subject,
+            plain_text_content=Content("text/plain", plain_text),
+            html_content=Content("text/html", html_content)
+        )
+        
+        sg = SendGridAPIClient(api_key)
+        response = sg.send(message)
+        
+        if response.status_code in [200, 201, 202]:
+            return True, f"Feedback sent successfully to {tlogic_email}"
+        else:
+            return False, f"SendGrid returned status code: {response.status_code}"
+            
+    except KeyError as e:
+        return False, f"Missing SendGrid configuration in secrets: {str(e)}"
+    except Exception as e:
+        return False, f"Error sending feedback: {str(e)}"
