@@ -17,15 +17,18 @@ import sys
 import os
 # Add current directory to path for sendgrid_sender import
 sys.path.insert(0, os.path.dirname(__file__))
+# Add current directory to path for sendgrid_sender import
+sys.path.insert(0, os.path.dirname(__file__))
+
 try:
     from sendgrid_sender import send_assessment_report_email, send_notification_to_tlogic
-    SENDGRID_AVAILABLE = True                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-except ImportError as e:                                                                                                                                                                                                                                                                              
-    SENDGRID_AVAILABLE = False                                                                                                                                                                                                                                                                                                                                                                                                                                          
+    SENDGRID_AVAILABLE = True                                                                                                    
+except ImportError as e:                                                                                                                    
+    SENDGRID_AVAILABLE = False                                                                          
     print(f"SendGrid not available - email sending will be disabled. Error: {e}")
 from utils.scoring import generate_executive_summary
-#from utils.ai_chat import get_chat_response, get_assessment_insights
-                                                                                                                    
+#from utils.ai_chat import get_chat_response, get_assessment_insights#from utils.ai_chat import get_chat_response, get_assessment_insights
+                                                                                                                              
 def scroll_to_top():
     """Scroll page to top when changing dimensions"""
     components.html(
@@ -33,8 +36,8 @@ def scroll_to_top():
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
-        """,                                                                                                                                        
-        height=0,                                                                                                                                        
+        """,                                                                                                                                                                                                                            
+        height=0,                                                                                                                                                                                                                            
     )
 # --- Compact, page-specific header for Dimension pages ---
 
@@ -48,7 +51,7 @@ def render_dimension_header(title: str, description: str, idx: int, total: int =
     Call this at the top of each Dimension page render.
     """
     # CSS - safe scoped class names so it doesn't affect other parts of the app.
-    css = """
+    css = """  
     <style>
     /* Container: compact header */
     .tlogic-dim-header {
@@ -777,21 +780,21 @@ def create_dimension_breakdown_chart(raw_scores, dimension_titles, dimension_col
                 range=[0, 15],
                 tickfont=dict(color='#E07A5F', size=13),
                 gridcolor='rgba(255, 255, 255, 0.2)',
-                showgrid=True
-            ),
-            angularaxis=dict(
+                showgrid=True  
+            ),  
+            angularaxis=dict(  
                 tickfont=dict(color='#E5E7EB', size=13),
-                showgrid=True,
+                showgrid=True,  
                 gridcolor='rgba(255, 255, 255, 0.1)'
-            ),
-            bgcolor='rgba(0,0,0,0)'
-        ),
+            ),  
+            bgcolor='rgba(0,0,0,0)'  
+        ),  
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',  
         font=dict(color='#E5E7EB', size=13),
-        height=700,
+        height=700,  
         margin=dict(l=100, r=100, t=100, b=100),
-        showlegend=False,
+        showlegend=False,  
         hovermode='closest'
     )
     
@@ -816,7 +819,7 @@ def render_results_dashboard():
             'score': score,
             'color': DIMENSIONS[i]['color'],
             'description': DIMENSIONS[i]['description']
-        })
+        })  
 
     # Update scores_data with formatted dimension scores for benchmark comparison
     scores_data['dimension_scores'] = dimension_scores
@@ -2044,11 +2047,11 @@ def main():
                         });
                     })();
                 </script>
-                """,
-                            height=0)
+                """,  
+                            height=0)  
 
             if st.button("Continue",
-                         type="primary",
+                         type="primary",  
                          key="continue_button_home"):
                 # Save user info to session state
                 st.session_state.user_name = user_name
@@ -2114,8 +2117,8 @@ def main():
                 selected_stage = st.selectbox(
                     "Select your AI implementation stage:",
                     options=stage_options,
-                    index=None,
-                    key="stage_modal_selectbox"
+                    index=None,    
+                    key="stage_modal_selectbox"    
                 )
                 
                 if selected_stage:
@@ -2145,7 +2148,7 @@ def main():
             completed_questions = len([
                 q for q in get_all_questions()
                 if q['id'] in st.session_state.answers
-            ])
+            ])      
             total_questions = len(get_all_questions())
             st.write(
                 f"Questions completed: {completed_questions}/{total_questions}"
