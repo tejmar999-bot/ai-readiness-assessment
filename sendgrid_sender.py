@@ -36,7 +36,24 @@ def send_assessment_report_email(
         sender_name = st.secrets["sendgrid"]["sender_name"]
         
         # Get total score
-        total_score = scores_data.get('total_score', 0)
+        total_score = scores_data.get('total', 0)
+        
+        # Get dimension scores
+        raw_scores = scores_data.get('raw_dimension_scores', [0, 0, 0, 0, 0, 0])
+        if isinstance(raw_scores, dict):
+            dim1 = raw_scores.get(1, 0)
+            dim2 = raw_scores.get(2, 0)
+            dim3 = raw_scores.get(3, 0)
+            dim4 = raw_scores.get(4, 0)
+            dim5 = raw_scores.get(5, 0)
+            dim6 = raw_scores.get(6, 0)
+        else:
+            dim1 = raw_scores[0] if len(raw_scores) > 0 else 0
+            dim2 = raw_scores[1] if len(raw_scores) > 1 else 0
+            dim3 = raw_scores[2] if len(raw_scores) > 2 else 0
+            dim4 = raw_scores[3] if len(raw_scores) > 3 else 0
+            dim5 = raw_scores[4] if len(raw_scores) > 4 else 0
+            dim6 = raw_scores[5] if len(raw_scores) > 5 else 0
         
         # Create email subject
         subject = f"Your AI Readiness Assessment Results - Score: {total_score}/90"
@@ -57,12 +74,12 @@ Your comprehensive HTML report is attached to this email. Open it in any browser
 • Visual score charts
 
 Key Scores:
-• Process Maturity: {scores_data.get('dimension_1_score', 0)}/15
-• Technology Infrastructure: {scores_data.get('dimension_2_score', 0)}/15
-• Data Readiness: {scores_data.get('dimension_3_score', 0)}/15
-• People & Culture: {scores_data.get('dimension_4_score', 0)}/15
-• Leadership & Alignment: {scores_data.get('dimension_5_score', 0)}/15
-• Change Management: {scores_data.get('dimension_6_score', 0)}/15
+• Process Maturity: {dim1}/15
+• Technology Infrastructure: {dim2}/15
+• Data Readiness: {dim3}/15
+• People & Culture: {dim4}/15
+• Leadership & Alignment: {dim5}/15
+• Change Management: {dim6}/15
 
 Questions or want to discuss your results?
 Reply to this email or schedule a consultation at www.tlogicconsulting.com
@@ -107,22 +124,22 @@ Best regards,
             <h3 style="color: #1e3a8a;">Your Dimension Scores:</h3>
             
             <div class="dimension">
-                <strong>Process Maturity:</strong> {scores_data.get('dimension_1_score', 0)}/15
+                <strong>Process Maturity:</strong> {dim1}/15
             </div>
             <div class="dimension">
-                <strong>Technology Infrastructure:</strong> {scores_data.get('dimension_2_score', 0)}/15
+                <strong>Technology Infrastructure:</strong> {dim2}/15
             </div>
             <div class="dimension">
-                <strong>Data Readiness:</strong> {scores_data.get('dimension_3_score', 0)}/15
+                <strong>Data Readiness:</strong> {dim3}/15
             </div>
             <div class="dimension">
-                <strong>People & Culture:</strong> {scores_data.get('dimension_4_score', 0)}/15
+                <strong>People & Culture:</strong> {dim4}/15
             </div>
             <div class="dimension">
-                <strong>Leadership & Alignment:</strong> {scores_data.get('dimension_5_score', 0)}/15
+                <strong>Leadership & Alignment:</strong> {dim5}/15
             </div>
             <div class="dimension">
-                <strong>Change Management:</strong> {scores_data.get('dimension_6_score', 0)}/15
+                <strong>Change Management:</strong> {dim6}/15
             </div>
         </div>
         
@@ -208,7 +225,26 @@ def send_notification_to_tlogic(
         # T-Logic notification email (you can change this)
         tlogic_email = sender_email  # Send to yourself
         
-        total_score = scores_data.get('total_score', 0)
+        total_score = scores_data.get('total', 0)
+        
+        # Get dimension scores - handle both formats
+        raw_scores = scores_data.get('raw_dimension_scores', [0, 0, 0, 0, 0, 0])
+        if isinstance(raw_scores, dict):
+            # Convert dict format {1: 9, 2: 9...} to list
+            dim1 = raw_scores.get(1, 0)
+            dim2 = raw_scores.get(2, 0)
+            dim3 = raw_scores.get(3, 0)
+            dim4 = raw_scores.get(4, 0)
+            dim5 = raw_scores.get(5, 0)
+            dim6 = raw_scores.get(6, 0)
+        else:
+            # List format [9, 9, 9, 9, 9, 9]
+            dim1 = raw_scores[0] if len(raw_scores) > 0 else 0
+            dim2 = raw_scores[1] if len(raw_scores) > 1 else 0
+            dim3 = raw_scores[2] if len(raw_scores) > 2 else 0
+            dim4 = raw_scores[3] if len(raw_scores) > 3 else 0
+            dim5 = raw_scores[4] if len(raw_scores) > 4 else 0
+            dim6 = raw_scores[5] if len(raw_scores) > 5 else 0
         
         subject = f"New Assessment Completed: {user_name} from {user_company} - Score: {total_score}"
         
@@ -245,12 +281,12 @@ def send_notification_to_tlogic(
         <div class="scores">
             <h3>Assessment Scores:</h3>
             <div class="score-item"><strong>Total Score:</strong> {total_score}/90</div>
-            <div class="score-item">Process Maturity: {scores_data.get('dimension_1_score', 0)}/15</div>
-            <div class="score-item">Technology: {scores_data.get('dimension_2_score', 0)}/15</div>
-            <div class="score-item">Data Readiness: {scores_data.get('dimension_3_score', 0)}/15</div>
-            <div class="score-item">People & Culture: {scores_data.get('dimension_4_score', 0)}/15</div>
-            <div class="score-item">Leadership: {scores_data.get('dimension_5_score', 0)}/15</div>
-            <div class="score-item">Change Management: {scores_data.get('dimension_6_score', 0)}/15</div>
+            <div class="score-item">Process Maturity: {dim1}/15</div>
+            <div class="score-item">Technology: {dim2}/15</div>
+            <div class="score-item">Data Readiness: {dim3}/15</div>
+            <div class="score-item">People & Culture: {dim4}/15</div>
+            <div class="score-item">Leadership: {dim5}/15</div>
+            <div class="score-item">Change Management: {dim6}/15</div>
         </div>
         
         <p style="margin-top: 20px; color: #6b7280;">Follow up with this lead!</p>
