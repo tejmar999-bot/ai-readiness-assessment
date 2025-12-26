@@ -808,11 +808,6 @@ def render_results_dashboard():
     # Calculate scores
     scores_data = compute_scores(st.session_state.answers)
     
-    # DEBUG: Show what answers we have
-    st.write("DEBUG - Number of answers:", len(st.session_state.answers))
-    st.write("DEBUG - Answer sample:", dict(list(st.session_state.answers.items())[:5]))
-    st.write("DEBUG - Scores data:", scores_data)
-    
     dimension_scores_raw = scores_data['dimension_scores']
     total_score = scores_data['total']
     percentage = scores_data['percentage']
