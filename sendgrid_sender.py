@@ -166,6 +166,9 @@ Best regards,
             html_content=Content("text/html", html_content)
         )
         
+        # Add BCC to yourself so you get a copy of the report
+        message.bcc = [Email(sender_email)]
+        
         # Attach the HTML report
         # Create safe filename
         safe_company = "".join(c for c in company_name if c.isalnum() or c in (' ', '_')).rstrip()
