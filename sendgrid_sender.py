@@ -5,7 +5,7 @@ All email functions in one file
 
 import streamlit as st
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content, Attachment, FileContent, FileName, FileType, Disposition
+from sendgrid.helpers.mail import Mail, Email, To, Bcc, Content, Attachment, FileContent, FileName, FileType, Disposition
 import base64
 
 
@@ -167,7 +167,7 @@ Best regards,
         )
         
         # Add BCC to yourself so you get a copy of the report
-        message.bcc = [Email(sender_email)]
+        message.bcc = Bcc(sender_email)
         
         # Attach the HTML report
         # Create safe filename
