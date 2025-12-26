@@ -19,13 +19,13 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 try:
     from sendgrid_sender import send_assessment_report_email, send_notification_to_tlogic
-    SENDGRID_AVAILABLE = True                                                                                  
-except ImportError as e:                                  
-    SENDGRID_AVAILABLE = False                                                            
+    SENDGRID_AVAILABLE = True                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+except ImportError as e:                                                                                                                                                                                                                                                                              
+    SENDGRID_AVAILABLE = False                                                                                                                                                                                                                                                                                                                                                                                                                                          
     print(f"SendGrid not available - email sending will be disabled. Error: {e}")
 from utils.scoring import generate_executive_summary
 #from utils.ai_chat import get_chat_response, get_assessment_insights
-                    
+                                                                                                                    
 def scroll_to_top():
     """Scroll page to top when changing dimensions"""
     components.html(
@@ -33,8 +33,8 @@ def scroll_to_top():
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
-        """,                                                            
-        height=0,                                                            
+        """,                                                                                                                                        
+        height=0,                                                                                                                                        
     )
 # --- Compact, page-specific header for Dimension pages ---
 
