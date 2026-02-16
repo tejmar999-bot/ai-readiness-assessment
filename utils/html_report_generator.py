@@ -179,7 +179,7 @@ Executive Risk & Readiness Report
 <div class="metric-box">
 
     <div class="metric">
-        <div style="font-size:11px;color:#6B7280;">Weighted Readiness Score</div>
+        <div style="font-size:11px;color:#6B7280;">Readiness Score</div>
         <div style="font-size:20px;font-weight:bold;color:{primary_color};">
             {total_score:.1f} / {max_possible:.1f}
         </div>

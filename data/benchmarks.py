@@ -2,166 +2,180 @@
 Industry Benchmarks for AI Process Readiness Assessment
 """
 from db.models import DEFAULT_BASELINE
+from data.dimensions import DIMENSIONS
 
 # Industry benchmark scores (average scores across different maturity levels)
 INDUSTRY_BENCHMARKS = {
+
     'Small Business (< 50 employees)': {
-        'process': 7.4,
-        'tech': 7.0,
-        'data': 6.8,
-        'people': 7.7,
+        'governance': 6.0,
         'leadership': 6.4,
-        'change': 6.1,
-        'total': 41.4,
-        'description': 'Small businesses typically have informal processes and limited AI infrastructure'
+        'data': 6.8,
+        'process': 7.4,
+        'technology': 7.0,
+        'people': 7.7,
+        'total': 41.3,
+        'description': 'Small organizations typically have informal governance and limited AI infrastructure.'
     },
-    'Mid-Market (50-500 employees)': {
-        'process': 8.9,
-        'tech': 8.4,
-        'data': 8.3,
-        'people': 9.3,
+
+    'Mid-Market (50–500 employees)': {
+        'governance': 7.6,
         'leadership': 8.1,
-        'change': 7.8,
-        'total': 50.8,
-        'description': 'Mid-market companies often have established processes and are beginning AI adoption'
+        'data': 8.3,
+        'process': 8.9,
+        'technology': 8.4,
+        'people': 9.3,
+        'total': 50.6,
+        'description': 'Mid-market organizations often have emerging governance structures and are scaling AI capabilities.'
     },
+
     'Enterprise (500+ employees)': {
-        'process': 10.1,
-        'tech': 10.3,
-        'data': 9.9,
-        'people': 11.0,
+        'governance': 9.0,
         'leadership': 9.5,
-        'change': 9.1,
-        'total': 59.9,
-        'description': 'Large enterprises typically have mature processes and active AI initiatives'
+        'data': 9.9,
+        'process': 10.1,
+        'technology': 10.3,
+        'people': 11.0,
+        'total': 59.8,
+        'description': 'Large enterprises typically operate structured governance frameworks with active AI programs.'
     },
+
     'Technology Leaders': {
-        'process': 11.5,
-        'tech': 11.8,
-        'data': 11.2,
-        'people': 12.3,
+        'governance': 10.4,
         'leadership': 10.9,
-        'change': 10.5,
-        'total': 68.2,
-        'description': 'Technology-first companies with advanced AI capabilities and mature practices'
+        'data': 11.2,
+        'process': 11.5,
+        'technology': 11.8,
+        'people': 12.3,
+        'total': 68.1,
+        'description': 'Technology-first organizations with advanced AI governance, data maturity, and execution discipline.'
     },
+
     'Industry Average': {
-        'process': 10.8,
-        'tech': 10.5,
-        'data': 10.2,
-        'people': 11.1,
+        'governance': 9.2,
         'leadership': 9.6,
-        'change': 9.2,
+        'data': 10.2,
+        'process': 10.8,
+        'technology': 10.5,
+        'people': 11.1,
         'total': 61.4,
-        'description': 'Overall average across all industries and company sizes'
+        'description': 'Average readiness levels across industries and company sizes.'
     }
 }
 
-def get_benchmark_comparison(your_scores, benchmark_name='Industry Average'):
-    """
-    Compare user scores against a specific benchmark using ID-based matching
-    
-    Args:
-        your_scores: Dictionary with dimension_scores from compute_scores
-        benchmark_name: Name of the benchmark to compare against
-        
-    Returns:
-        Dictionary with comparison data
-    """
+
+from data.dimensions import DIMENSIONS
+
+
+# ------------------------------------------
+# BENCHMARK COMPARISON
+# ------------------------------------------
+
+def get_benchmark_comparison(your_scores, benchmark_name="Industry Average"):
+
     if benchmark_name not in INDUSTRY_BENCHMARKS:
-        benchmark_name = 'Industry Average'
-    
+        benchmark_name = "Industry Average"
+
     benchmark = INDUSTRY_BENCHMARKS[benchmark_name]
-    dimension_scores = your_scores['dimension_scores']
-    
+    dimension_scores = your_scores["dimension_scores"]
+
     comparison = {
-        'benchmark_name': benchmark_name,
-        'benchmark_description': benchmark['description'],
-        'your_total': your_scores['total'],
-        'benchmark_total': benchmark['total'],
-        'total_difference': your_scores['total'] - benchmark['total'],
-        'dimensions': []
+        "benchmark_name": benchmark_name,
+        "benchmark_description": benchmark["description"],
+        "your_total": round(your_scores["total"], 1),
+        "benchmark_total": round(benchmark["total"], 1),
+        "total_difference": round(your_scores["total"] - benchmark["total"], 1),
+        "dimensions": []
     }
-    
-    # Use ID-based matching to ensure correct benchmark alignment
+
     for score_data in dimension_scores:
-        dim_id = score_data['id']
-        your_score = score_data['score']
-        
-        # Get benchmark score by ID, default to 9.1 if not found
-        benchmark_score = benchmark.get(dim_id, 9.1)
-        
-        # Ensure benchmark_score is valid for division
-        if benchmark_score == 0:
-            percentage = 0
+
+        dim_id = score_data["id"]
+        your_score = round(score_data["score"], 1)
+        benchmark_score = round(benchmark.get(dim_id, 0), 1)
+
+        difference = round(your_score - benchmark_score, 1)
+
+        # Color-coded performance label
+        if difference >= 1:
+            label = "Above Benchmark"
+            color = "#10B981"  # Green
+        elif difference <= -1:
+            label = "Below Benchmark"
+            color = "#DC2626"  # Red
         else:
-            percentage = round((your_score / benchmark_score * 100), 1)
-        
-        comparison['dimensions'].append({
-            'id': dim_id,
-            'title': score_data['title'],
-            'your_score': your_score,
-            'benchmark_score': round(benchmark_score, 1),  # Round for display consistency
-            'difference': round(your_score - benchmark_score, 1),
-            'percentage_of_benchmark': percentage
+            label = "In Line"
+            color = "#F59E0B"  # Amber
+
+        comparison["dimensions"].append({
+            "id": dim_id,
+            "title": score_data["title"],
+            "your_score": your_score,
+            "benchmark_score": benchmark_score,
+            "difference": difference,
+            "performance_label": label,
+            "color": color
         })
-    
+
     return comparison
 
+
+# ------------------------------------------
+# BENCHMARK LIST
+# ------------------------------------------
+
 def get_all_benchmarks():
-    """Get list of all available benchmarks including moving average"""
-    benchmarks = ['Moving Average Benchmark'] + list(INDUSTRY_BENCHMARKS.keys())
-    return benchmarks
+    return ["Moving Average Benchmark"] + list(INDUSTRY_BENCHMARKS.keys())
+
 
 def get_benchmark_data(benchmark_name):
-    """Get benchmark data for a specific benchmark"""
-    if benchmark_name == 'Moving Average Benchmark':
+
+    if benchmark_name == "Moving Average Benchmark":
         return get_moving_average_benchmark()
-    return INDUSTRY_BENCHMARKS.get(benchmark_name, INDUSTRY_BENCHMARKS['Industry Average'])
+
+    return INDUSTRY_BENCHMARKS.get(
+        benchmark_name,
+        INDUSTRY_BENCHMARKS["Industry Average"]
+    )
+
+
+# ------------------------------------------
+# MOVING AVERAGE BENCHMARK
+# ------------------------------------------
 
 def get_moving_average_benchmark():
-    """
-    Get the current moving average benchmark from the database.
-    This is updated as users complete assessments (excluding outliers).
-    
-    Returns:
-        Dictionary with dimension scores and metadata similar to INDUSTRY_BENCHMARKS format
-    """
+
     try:
         from db.operations import get_current_benchmark
-        
+
         benchmark_scores = get_current_benchmark()
-        
-        # Map dimension IDs to benchmark scores
-        dimension_ids = ['process', 'tech', 'data', 'people', 'leadership', 'change']
-        
+
         benchmark_dict = {}
         total = 0
-        for i, dim_id in enumerate(dimension_ids):
-            score = benchmark_scores[i] if i < len(benchmark_scores) else 9.1
-            benchmark_dict[dim_id] = round(score, 1)
+
+        # Align strictly to DIMENSIONS order
+        for i, dimension in enumerate(DIMENSIONS):
+            dim_id = dimension["id"]
+
+            score = benchmark_scores[i] if i < len(benchmark_scores) else 9.0
+            score = round(score, 1)
+
+            benchmark_dict[dim_id] = score
             total += score
-        
-        return {
-            'process': benchmark_dict.get('process', 10.8),
-            'tech': benchmark_dict.get('tech', 10.5),
-            'data': benchmark_dict.get('data', 10.2),
-            'people': benchmark_dict.get('people', 11.1),
-            'leadership': benchmark_dict.get('leadership', 9.6),
-            'change': benchmark_dict.get('change', 9.2),
-            'total': round(total, 1),
-            'description': 'Moving average benchmark from all valid assessments'
-        }
+
+        benchmark_dict["total"] = round(total, 1)
+        benchmark_dict["description"] = (
+            "Dynamic moving average benchmark from completed AI Readiness Pro assessments."
+        )
+
+        return benchmark_dict
+
     except Exception as e:
-        print(f"Error fetching moving average benchmark: {e}")
-        # Return default baseline on error
-        return {
-            'process': 10.8,
-            'tech': 10.5,
-            'data': 10.2,
-            'people': 11.1,
-            'leadership': 9.6,
-            'change': 9.2,
-            'total': 61.4,
-            'description': 'Default baseline (moving average unavailable)'
-        }
+        print(f"Benchmark fetch error: {e}")
+
+        # Fallback baseline aligned to dimension order
+        fallback = {dim["id"]: 9.0 for dim in DIMENSIONS}
+        fallback["total"] = round(9.0 * len(DIMENSIONS), 1)
+        fallback["description"] = "Baseline benchmark (dynamic benchmark unavailable)."
+
+        return fallback

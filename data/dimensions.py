@@ -19,6 +19,7 @@ DIMENSIONS = [
         'title': 'AI Governance & Risk',
         'weight': 1.5,
         'critical': True,
+        'description': 'The maturity of your organization’s AI governance structures, policies, and risk management practices.',
         'color': PALETTE[0],
         'questions': [
             {
@@ -64,6 +65,7 @@ DIMENSIONS = [
         'weight': 1.4,
         'critical': True,
         'color': PALETTE[1],
+        'description': 'The extent to which executive leadership is actively driving AI strategy, investment, and accountability across the organization.',
         'questions': [
             {
                 'id': 'leadership_strategy',
@@ -107,6 +109,7 @@ DIMENSIONS = [
         'title': 'Data Foundations',
         'weight': 1.4,
         'critical': True,
+        'description': 'The quality, accessibility, and governance of your operational data that fuels AI initiatives.',
         'color': PALETTE[2],
         'questions': [
             {
@@ -150,6 +153,7 @@ DIMENSIONS = [
         'id': 'process',
         'title': 'Process Discipline',
         'weight': 1.0,
+        'description': 'The maturity of your organization’s process discipline around documenting, measuring, and continuously improving mission-critical workflows.',
         'color': PALETTE[3],
         'questions': [
             {
@@ -193,6 +197,7 @@ DIMENSIONS = [
         'id': 'technology',
         'title': 'Technology Architecture',
         'weight': 1.1,
+        'description': 'The modernity, integration, and security of your technology stack that supports AI initiatives.',
         'color': PALETTE[4],
         'questions': [
             {
@@ -236,6 +241,7 @@ DIMENSIONS = [
         'id': 'people',
         'title': 'People Capability',
         'weight': 1.2,
+        'description': 'The readiness and capability of your workforce to adopt, use, and drive AI initiatives.',
         'color': PALETTE[5],
         'questions': [
             {

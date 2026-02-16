@@ -8,7 +8,7 @@ from io import BytesIO
 from PIL import Image
 from utils.recommendations import generate_dimension_recommendations
 from utils.scoring import compute_scores
-from data.dimensions import DIMENSIONS, BRIGHT_PALETTE, get_all_questions
+from data.dimensions import DIMENSIONS
 from utils.html_report_generator import generate_html_report
 from data.benchmarks import get_benchmark_comparison, get_all_benchmarks, get_benchmark_data
 from db.operations import (ensure_tables_exist, save_assessment)
@@ -407,9 +407,9 @@ with st.container():
 def render_progress_bar():
     """Render progress bar with arrow indicators - Sticky header"""
     current_dim = st.session_state.current_dimension
-    dimension_color = DIMENSIONS[current_dim]['color']
-    bright_color = BRIGHT_PALETTE[current_dim]
     dimension = DIMENSIONS[current_dim]
+    dimension_color = dimension['color']
+    bright_color = dimension['color']
 
     # Add timestamp to force re-rendering
     import time
@@ -481,7 +481,7 @@ def render_progress_bar():
                     <div>
                         <span style="color: {bright_color}; font-size: 2rem; font-weight: 700;">{dimension["title"]}{' <span style="color: {bright_color}; font-size: 2rem; font-weight: 700;">*</span>' if dimension.get('critical', False) else ''}</span>
                     </div>
-                    <span style="color: #D1D5DB; font-size: 1.05rem; font-style: italic;"> - {dimension["what_it_measures"]}</span>
+                    <span style="color: #D1D5DB; font-size: 1.05rem; font-style: italic;"> - {dimension["description"]}</span>
                 </div>
                 <div class="dimension-label">
                     <span style="color: {dimension_color}; font-size: 1.1rem; font-weight: 600;">Dimension {current_dim + 1} of {len(DIMENSIONS)}</span>
@@ -807,47 +807,47 @@ def create_dimension_breakdown_chart(raw_scores, dimension_titles, dimension_col
 def render_results_dashboard():
     """Render the results dashboard"""
     # Calculate scores
-    scores_data = compute_scores(st.session_state.answers)
-    
-    dimension_scores_raw = scores_data['dimension_scores']
-    total_score = scores_data['total']
-    percentage = scores_data['percentage']
-    readiness_band = scores_data['readiness_band']
+    total_score = scores_data["total"]
+    percentage = scores_data["percentage"]
+    readiness_band = scores_data["readiness_band"]
+    governance_index = scores_data["governance_index"]
+    band_color = readiness_band["color"]
 
-    # Format dimension scores for display (combine with dimension info)
-    dimension_scores = []
-    for i, score in enumerate(dimension_scores_raw):
-        dimension_scores.append({
-            'id': DIMENSIONS[i]['id'],
-            'title': DIMENSIONS[i]['title'],
-            'score': score,
-            'color': DIMENSIONS[i]['color'],
-            'description': DIMENSIONS[i]['description']
-        })
-
-    # Update scores_data with formatted dimension scores for benchmark comparison
-    scores_data['dimension_scores'] = dimension_scores
-
-    primary_color = st.session_state.primary_color
-
-    # Header with logo (same layout as home page)
-    col1, col2 = st.columns([4, 1])
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown(
-            f'<div id="assessment-results-header" class="main-header" style="color: {primary_color};">Assessment Results</div>',
-            unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="metric-card">
+                <h3>Total Score</h3>
+                <div style="font-size:28px;font-weight:bold;">
+                    {total_score}/90
+                </div>
+                <div style="font-size:18px;color:#9CA3AF;">
+                    ({percentage}%)
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        if st.session_state.company_logo is not None:
-            # Logo sized at 105px (50% larger than previous 70px)
-            st.markdown(f"""
-                <div style="text-align: right; height: 105px; overflow: visible; margin-left: auto; display: flex; align-items: center; justify-content: flex-end;">
-                    <img src="data:image/png;base64,{image_to_base64(st.session_state.company_logo, max_height=105)}" 
-                         style="height: 105px; width: auto; display: block; border: none; background: transparent;" />
+        st.markdown(f"""
+            <div class="metric-card">
+                <h3>Readiness Level</h3>
+                <div style="font-size:22px;font-weight:bold;color:{band_color};">
+                    {readiness_band['label']}
                 </div>
-                """,
-                        unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        st.markdown(f"""
+            <div class="metric-card">
+                <h3>Governance Index</h3>
+                <div style="font-size:28px;font-weight:bold;color:{band_color};">
+                    {governance_index}%
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
 
     # Custom CSS for Results page scrollbars
     st.markdown("""
@@ -1009,29 +1009,50 @@ def render_results_dashboard():
         band_color = readiness_band['color']
         
         # Get critical status to determine if warning icon should be shown
-        critical_status = scores_data['critical_status']
-        warning_icon_html = ""
-        if critical_status['severity'] in ['critical', 'warning']:
-            warning_icon_html = f'<div style="font-size: 1.8rem; margin-top: 0.5rem; text-align: center; color: {critical_status["color"]};">{critical_status["icon"]}</div>'
-        
-        st.markdown(f"""
-        <div class="score-card">
-            <h3 style="color: {primary_color};">Readiness Level</h3>
-            <div class="readiness-band" style="color: {band_color}; font-size: 1.8rem;">{readiness_band['label']}</div>
-            {warning_icon_html}
-        </div>
-        """,
-                    unsafe_allow_html=True)
+        critical_status = scores_data["critical_status"]
 
-    with col3:
-        avg_score = round(total_score / 6, 1)
-        st.markdown(f"""
-        <div class="score-card">
-            <h3 style="color: {primary_color};">Average Score</h3>
-            <div style="font-size: 2rem; font-weight: bold;">{avg_score}/15</div>
-        </div>
-        """,
-                    unsafe_allow_html=True)
+        if critical_status["severity"] != "info":
+
+            st.markdown(f"""
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                padding:10px 14px;
+                background:#451A03;
+                border-left:4px solid #F59E0B;
+                border-radius:6px;
+                margin-top:16px;
+                font-size:15px;
+                line-height:1.35;
+            ">
+                <div style="font-size:20px;">{critical_status["icon"]}</div>
+                <div>
+                    <strong style="font-size:16px;">
+                        {critical_status["title"]}
+                    </strong><br>
+                    <span style="font-size:15px;">
+                        {critical_status["message"]}
+                    </span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+
+
+            with col3:
+                governance_index = scores_data["governance_index"]
+                band_color = readiness_band["color"]
+
+                st.markdown(f"""
+                    <div class="score-card">
+                        <h3 style="color: {primary_color};">Governance Index</h3>
+                        <div style="font-size: 2rem; font-weight: bold; color:{band_color};">
+                            {governance_index}%
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+
     
     # Critical Dimension Status - Prominent Display
     st.markdown("<br>", unsafe_allow_html=True)
@@ -1142,7 +1163,7 @@ def render_results_dashboard():
     st.markdown(f'<h3 style="font-size: 18px; color: {primary_color}; font-weight: bold;">Dimension Breakdown</h3>', unsafe_allow_html=True)
     raw_scores_list = scores_data['raw_dimension_scores']
     dimension_titles = [d['title'] for d in DIMENSIONS]
-    dimension_colors = BRIGHT_PALETTE
+    dimension_colors = [d['color'] for d in DIMENSIONS]
     fig = create_dimension_breakdown_chart(raw_scores_list, dimension_titles, dimension_colors)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -1275,75 +1296,102 @@ def render_results_dashboard():
     except Exception as e:
         st.error(f"Unable to load benchmark comparison: {str(e)}")
 
+
+    # ------------------------------------------
     # Recommended Actions Section
-        st.markdown("---")
+    # ------------------------------------------
+
+    st.markdown("---")
+
+    st.markdown(
+        f"""
+        <h3 id="recommended-actions" style="color:{primary_color}; text-align:center; margin-top:2rem;">
+            Strategic Recommendations
+        </h3>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <p style="text-align:center; color:#FFFFFF; margin-bottom:1.5rem; font-size:1.05rem;">
+        AI Readiness Pro™ follows a <strong>Governance-First mantra</strong>:
+        strengthen structural controls before scaling intelligent systems.
+        The priorities below identify where executive action is required
+        to reduce AI risk and enable disciplined deployment.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    from utils.recommendations import generate_dimension_recommendations
+
+    dimension_recommendations = generate_dimension_recommendations(scores_data)
+
+    for dimension in DIMENSIONS:
+
+        rec_item = next(
+            r for r in dimension_recommendations
+            if r["id"] == dimension["id"]
+        )
+
+        dim_scores = [
+            st.session_state.answers.get(q["id"], 3)
+            for q in dimension["questions"]
+        ]
+
+        dimension_avg = sum(dim_scores) / len(dim_scores) if dim_scores else 0
+        weaknesses_count = len([s for s in dim_scores if s <= 3])
+
+        if dimension_avg >= 4.2:
+            insight = (
+                f"<strong>Governance-Aligned Strength:</strong> "
+                f"{dimension['title']} demonstrates controlled maturity and can "
+                "support responsible AI expansion."
+            )
+
+        elif dimension_avg >= 3.2:
+            insight = (
+                f"<strong>Stabilization Required:</strong> "
+                f"{dimension['title']} is operational but requires reinforcement "
+                "before AI initiatives scale."
+            )
+
+        else:
+            insight = (
+                f"<strong>Structural Risk Exposure:</strong> "
+                f"{dimension['title']} contains {weaknesses_count} foundational gap(s) "
+                "that should be remediated prior to AI expansion."
+            )
+
+        recs = rec_item["recommendations"]
+
+        recommendations_html = "".join([
+            f'<p style="color:#D1D5DB; margin:0.4rem 0 0.4rem 1rem;">• {rec}</p>'
+            for rec in recs
+        ])
+
         st.markdown(
-            f'<h3 id="recommended-actions" style="color: {primary_color}; text-align: center; margin-top: 2rem;">🎯 Recommended Actions*</h3>',
-            unsafe_allow_html=True)
-        st.markdown(
-            '<p style="text-align: center; color: #FFFFFF; margin-bottom: 1.5rem; font-size: 1.1rem;">*Based on your assessment, here are holistic insights and specific recommendations to accelerate your AI readiness journey. This assessment provides a high-level representation based on subjective inputs and should not be interpreted as definitive readiness without a thorough professional evaluation.</p>',
-            unsafe_allow_html=True)
+            f"""
+            <div style="background:#374151; border-left:4px solid {dimension['color']};
+                        padding:1.25rem; margin:1rem 0; border-radius:0.5rem;">
 
-        from utils.recommendations import generate_dimension_recommendations
+                <h4 style="color:{dimension['color']}; margin-bottom:0.6rem;">
+                    {dimension['title']}
+                </h4>
 
-        # Generate centralized recommendations (single source of truth)
-        dimension_recommendations = generate_dimension_recommendations(scores_data)
+                <p style="color:#E5E7EB; margin-bottom:0.6rem; line-height:1.5;">
+                    {insight}
+                </p>
 
-        # Analyze each dimension holistically
-        for dimension, rec_item in zip(DIMENSIONS, dimension_recommendations):
-
-            # Calculate dimension average score from user answers
-            dim_scores = [
-                st.session_state.answers.get(q['id'], 3)
-                for q in dimension['questions']
-            ]
-
-            avg_score = sum(dim_scores) / len(dim_scores) if dim_scores else 0
-
-            strengths_count = len([s for s in dim_scores if s >= 4])
-            weaknesses_count = len([s for s in dim_scores if s <= 3])
-            total = len(dim_scores)
-
-            # Determine insight
-            if avg_score >= 4.0:
-                insight = (
-                    f"🌟 **Strong Foundation:** Your {dimension['title'].lower()} "
-                    f"shows excellent maturity with {strengths_count}/{total} areas rated highly. "
-                    "This dimension can serve as a strategic accelerator for AI implementation."
-                )
-            elif avg_score >= 3.0:
-                insight = (
-                    f"✅ **Solid Progress:** Your {dimension['title'].lower()} "
-                    f"demonstrates good progress with {strengths_count} strong area(s) "
-                    f"and {weaknesses_count} area(s) needing attention. "
-                    "Strengthening gaps will significantly improve AI readiness."
-                )
-            else:
-                insight = (
-                    f"📈 **Growth Opportunity:** Your {dimension['title'].lower()} "
-                    f"presents a substantial improvement opportunity. "
-                    f"Addressing {weaknesses_count} foundational area(s) is critical before scaling AI initiatives."
-                )
-
-            # Get recommendations from centralized engine
-            recs = rec_item["recommendations"]
-
-            recommendations_html = "".join([
-                f'<p style="color: #D1D5DB; line-height: 1.5; margin-left: 1rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">• {rec}</p>'
-                for rec in recs
-            ])
-
-            # Render card
-            st.markdown(f"""
-            <div style="background-color: #374151; border-left: 4px solid {dimension['color']}; padding: 1.5rem; margin: 1rem 0; border-radius: 0.5rem;">
-                <h4 style="color: {dimension['color']}; margin-bottom: 1rem;">📌 {dimension['title']}</h4>
-                <p style="color: #E5E7EB; line-height: 1.6; margin-bottom: 1rem;">{insight}</p>
-                <p style="color: #D1D5DB; margin-bottom: 0.5rem;"><strong>Specific Recommendations:</strong></p>
                 {recommendations_html}
-            </div>
-            """, unsafe_allow_html=True)
 
-            st.markdown("<br>", unsafe_allow_html=True)
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown("<br>", unsafe_allow_html=True)
 
 
         # Consultation CTA
@@ -2103,15 +2151,28 @@ def main():
 
         # Show current answers summary in sidebar
         with st.sidebar:
+
             st.markdown("### 📊 Current Progress")
-            completed_questions = len([
-                q for q in get_all_questions()
-                if q['id'] in st.session_state.answers
-            ])
-            total_questions = len(get_all_questions())
+
+            # Flatten all questions dynamically from DIMENSIONS
+            all_questions = [
+                question
+                for dimension in DIMENSIONS
+                for question in dimension["questions"]
+            ]
+
+            completed_questions = sum(
+                1
+                for question in all_questions
+                if question["id"] in st.session_state.answers
+            )
+
+            total_questions = len(all_questions)
+
             st.write(
                 f"Questions completed: {completed_questions}/{total_questions}"
             )
+
 
             if st.session_state.answers:
                 st.markdown("### Your Current Answers")
@@ -2123,9 +2184,9 @@ def main():
                                 st.session_state.answers[q['id']])
 
                     if dim_answers:
-                        avg_score = sum(dim_answers) / len(dim_answers)
+                        dimension_avg = sum(dim_answers) / len(dim_answers)
                         st.write(
-                            f"**{dimension['title']}**: {avg_score:.1f}/5")
+                            f"**{dimension['title']}**: {dimension_avg:.1f}/5")
 
     else:
         # Results mode
