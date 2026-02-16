@@ -1,240 +1,188 @@
 """
-Scoring utilities for the AI Process Readiness Assessment
-Simplified approach: Direct sum of raw scores with critical dimension warnings
+Scoring logic for Governance-First AI Readiness Framework
 """
 
 from data.dimensions import DIMENSIONS
 
 
+# ------------------------------------------
+# CORE SCORE CALCULATION (WEIGHTED)
+# ------------------------------------------
+
 def compute_scores(answers):
-    """
-    Compute scores using simplified approach.
-    
-    - Raw score per dimension = sum of 3 questions (3-15 range)
-    - Total score = sum of all 6 raw scores (max 90)
-    - Readiness level based on total score only
-    - Critical dimension warnings (Data & Leadership) are separate UI elements
-    
-    Args:
-        answers: Dictionary with question IDs as keys and scores (1-5) as values
-    
-    Returns:
-        Dictionary with raw_dimension_scores, total, percentage, readiness_band, and critical_status
-    """
+
     raw_dimension_scores = []
-    
-    # Calculate raw scores for each dimension
+    weighted_dimension_scores = []
+
+    total_weighted_score = 0
+    max_possible_weighted = 0
+
     for dimension in DIMENSIONS:
+
         dim_total = 0
-        question_count = 0
-        
-        for question in dimension['questions']:
-            question_id = question['id']
-            if question_id in answers:
-                dim_total += answers[question_id]
-                question_count += 1
-        
-        # Raw score (3-15 range)
-        if question_count > 0:
-            dim_raw_score = dim_total
-        else:
-            dim_raw_score = 0
-        
-        raw_dimension_scores.append(round(dim_raw_score, 1))
-    
-    # Calculate total score (simple sum, max 90)
-    total_score = sum(raw_dimension_scores)
-    total_score_rounded = round(total_score, 1)
-    
-    # Calculate percentage
-    percentage = round((total_score_rounded / 90) * 100)
-    
-    # Get critical dimension scores
-    data_readiness = raw_dimension_scores[2]  # Index 2
-    leadership = raw_dimension_scores[4]  # Index 4
-    
-    # Determine readiness level based on total score only
-    readiness_band = get_readiness_band(total_score_rounded)
-    
-    # Determine critical dimension status
-    critical_status = get_critical_dimension_status(data_readiness, leadership)
-    
+
+        for question in dimension["questions"]:
+            qid = question["id"]
+            dim_total += answers.get(qid, 0)
+
+        raw_dimension_scores.append(dim_total)
+
+        weight = dimension.get("weight", 1.0)
+
+        weighted_score = dim_total * weight
+        weighted_dimension_scores.append(weighted_score)
+
+        total_weighted_score += weighted_score
+        max_possible_weighted += 15 * weight
+
+    percentage = round((total_weighted_score / max_possible_weighted) * 100, 1)
+
+    readiness_band = get_readiness_band(percentage)
+
+    critical_status = get_critical_dimension_status(raw_dimension_scores)
+
+    governance_index = calculate_governance_index(raw_dimension_scores)
+
     return {
-        'raw_dimension_scores': raw_dimension_scores,
-        'dimension_scores': raw_dimension_scores,  # Same as raw (no weighting)
-        'total': total_score_rounded,
-        'percentage': percentage,
-        'readiness_band': readiness_band,
-        'critical_status': critical_status,
-        'data_readiness': data_readiness,
-        'leadership': leadership
+        "raw_dimension_scores": raw_dimension_scores,
+        "dimension_scores": weighted_dimension_scores,
+        "total": round(total_weighted_score, 1),
+        "max_possible": round(max_possible_weighted, 1),
+        "percentage": percentage,
+        "readiness_band": readiness_band,
+        "critical_status": critical_status,
+        "governance_index": governance_index
     }
 
 
-def get_readiness_band(total_score):
-    """
-    Determine readiness level based on total score only.
-    
-    Args:
-        total_score: Total score out of 90
-    
-    Returns:
-        Dictionary with label, emoji, color, description, and next_steps
-    """
-    if total_score >= 70:
+# ------------------------------------------
+# READINESS BANDS (EXECUTIVE TONE)
+# ------------------------------------------
+
+def get_readiness_band(percentage):
+
+    if percentage >= 75:
         return {
-            'label': '🟢 AI-Ready',
-            'emoji': '🟢',
-            'color': '#10B981',
-            'description': 'Strong foundation for AI implementation. Begin strategic pilots with confidence.',
-            'next_steps': 'Select 1-2 high-value use cases, establish success metrics, launch pilots'
+            "label": "🟢 AI-Ready",
+            "description": "Governance, leadership, and operational foundations are sufficiently mature to proceed with structured AI initiatives."
         }
-    elif total_score >= 56:
+
+    elif percentage >= 60:
         return {
-            'label': '🔵 Building Blocks',
-            'emoji': '🔵',
-            'color': '#3B82F6',
-            'description': 'Foundational elements in place, but improvements needed before scaling.',
-            'next_steps': 'Strengthen weak dimensions over 3-6 months, then reassess'
+            "label": "🔵 Conditional Readiness",
+            "description": "AI initiatives may proceed cautiously, provided identified weaknesses are remediated in parallel."
         }
-    elif total_score >= 42:
+
+    elif percentage >= 45:
         return {
-            'label': '🟡 Foundational Gaps',
-            'emoji': '🟡',
-            'color': '#FBBF24',
-            'description': 'Significant foundational work needed before AI can deliver value.',
-            'next_steps': 'Focus on business fundamentals for 9-12 months, not AI'
+            "label": "🟡 Foundational Exposure",
+            "description": "Significant structural gaps exist. AI expansion should pause until foundational controls are strengthened."
         }
+
     else:
         return {
-            'label': '🔴 Not Ready',
-            'emoji': '🔴',
-            'color': '#DC2626',
-            'description': 'Focus on core operations before considering AI.',
-            'next_steps': 'Improve processes, data, infrastructure (12-18 months)'
+            "label": "🔴 High Risk – Not Ready",
+            "description": "Core governance and operational controls are insufficient. AI initiatives should not proceed."
         }
 
 
-def get_critical_dimension_status(data_readiness, leadership):
-    """
-    Determine critical dimension status for UI display.
-    
-    Args:
-        data_readiness: Raw score for Data Readiness (3-15)
-        leadership: Raw score for Leadership & Alignment (3-15)
-    
-    Returns:
-        Dictionary with status, icon, message, and color
-    """
-    if data_readiness < 9 and leadership < 9:
-        # Both critical dimensions below threshold - STOP
+# ------------------------------------------
+# CRITICAL DIMENSION CHECK
+# ------------------------------------------
+
+def get_critical_dimension_status(raw_scores):
+
+    below_threshold = []
+
+    for dimension, score in zip(DIMENSIONS, raw_scores):
+        if dimension.get("critical", False) and score < 9:
+            below_threshold.append((dimension["title"], score))
+
+    if len(below_threshold) >= 2:
+        dims = ", ".join([f"{d[0]} ({d[1]}/15)" for d in below_threshold])
         return {
-            'status': 'stop',
-            'icon': '🛑',
-            'title': 'CRITICAL: Do Not Proceed',
-            'message': f'Both critical dimensions are below threshold. Data Readiness: {data_readiness:.1f}/15 | Leadership & Alignment: {leadership:.1f}/15. Address these immediately before any AI initiatives.',
-            'color': '#DC2626',
-            'severity': 'critical'
+            "severity": "critical",
+            "icon": "🛑",
+            "title": "Critical Governance Deficiency",
+            "message": f"The following critical dimensions are below minimum threshold: {dims}. AI initiatives should not proceed until these exposures are remediated."
         }
-    elif data_readiness < 9 or leadership < 9:
-        # One critical dimension below threshold - WARNING
-        if data_readiness < 9:
-            dim_name = 'Data Readiness'
-            dim_score = data_readiness
-        else:
-            dim_name = 'Leadership & Alignment'
-            dim_score = leadership
-        
+
+    elif len(below_threshold) == 1:
+        dim = below_threshold[0]
         return {
-            'status': 'warning',
-            'icon': '⚠️',
-            'title': 'WARNING: Critical Dimension Below Threshold',
-            'message': f'{dim_name} scored {dim_score:.1f}/15 (needs ≥9). This must be addressed before scaling AI initiatives.',
-            'color': '#F59E0B',
-            'severity': 'warning'
+            "severity": "warning",
+            "icon": "⚠️",
+            "title": "Critical Dimension Below Threshold",
+            "message": f"{dim[0]} scored {dim[1]}/15 (minimum 9 required). AI expansion should pause until this gap is corrected."
         }
+
     else:
-        # Both critical dimensions meet threshold - READY
         return {
-            'status': 'ready',
-            'icon': '✓',
-            'title': 'Critical Dimensions: READY',
-            'message': f'Data Readiness: {data_readiness:.1f}/15 ✓ | Leadership & Alignment: {leadership:.1f}/15 ✓',
-            'color': '#10B981',
-            'severity': 'info'
+            "severity": "info",
+            "icon": "✓",
+            "title": "Critical Dimensions Satisfied",
+            "message": "All governance-critical dimensions meet minimum readiness thresholds."
         }
 
+
+# ------------------------------------------
+# GOVERNANCE RISK INDEX
+# ------------------------------------------
+
+def calculate_governance_index(raw_scores):
+
+    governance_score = raw_scores[0]  # Governance is first dimension
+    percentage = round((governance_score / 15) * 100)
+
+    return percentage
+
+
+# ------------------------------------------
+# EXECUTIVE SUMMARY (SHARPENED TONE)
+# ------------------------------------------
 
 def generate_executive_summary(scores_data):
-    """
-    Generate executive summary text based on assessment scores.
-    
-    Args:
-        scores_data: Dictionary with scores, readiness band, and critical status
-    
-    Returns:
-        String with executive summary
-    """
-    raw_scores = scores_data['raw_dimension_scores']
-    total_score = scores_data['total']
-    readiness_band = scores_data['readiness_band']
-    critical_status = scores_data['critical_status']
-    
-    # Dimension names
-    dimension_names = ['Process Maturity', 'Technology Infrastructure', 'Data Readiness', 'People & Culture', 'Leadership & Alignment', 'Governance & Risk']
-    
-    # Identify strong and weak dimensions with scores
-    avg_score = sum(raw_scores) / len(raw_scores)
-    strong_dims = [(dimension_names[i], raw_scores[i]) for i, score in enumerate(raw_scores) if score > avg_score + 1]
-    weak_dims = [(dimension_names[i], raw_scores[i]) for i, score in enumerate(raw_scores) if score < avg_score - 1]
-    
-    # Get critical dimension info
-    data_readiness = raw_scores[2]
-    leadership = raw_scores[4]
-    
-    # Build summary based on readiness level
-    if readiness_band['label'].startswith('🟢'):
-        # AI-Ready
-        if strong_dims:
-            top_strong = strong_dims[0][0]
-            summary = f"Your organization is well-positioned for AI success, with {top_strong} ({strong_dims[0][1]:.1f}/15) showing particular strength. You've built the fundamentals needed for effective AI deployment. Now focus on execution: identify 1-2 high-impact use cases aligned with business goals, establish clear success metrics, and launch pilots with executive sponsorship to validate your approach."
-        else:
-            summary = f"Your organization demonstrates strong, balanced capabilities across all dimensions. You've built the fundamentals needed for effective AI deployment. Now focus on execution: identify 1-2 high-impact use cases aligned with business goals, establish clear success metrics, and launch pilots with executive sponsorship to demonstrate AI's business value."
-    elif readiness_band['label'].startswith('🔵'):
-        # Building Blocks
-        if weak_dims:
-            weakest = weak_dims[0]
-            weak_list = ', '.join([d[0] for d in weak_dims])
-            summary = f"You have core foundational pieces in place, but {weakest[0]} ({weakest[1]:.1f}/15) and a few other areas need targeted attention. Prioritize strengthening {weak_list} before scaling AI initiatives. Set specific improvement goals for each weak area, assign ownership, and plan to reassess in 3-6 months when you've made meaningful progress."
-        else:
-            summary = f"You have core foundational pieces in place with good overall balance. While each dimension could use some refinement, you're on the right track. Continue incremental improvements across your organization, then reassess in 6 months when you can pursue pilot projects with greater confidence."
-    elif readiness_band['label'].startswith('🟡'):
-        # Foundational Gaps
-        if weak_dims:
-            weakest_list = ', '.join([f"{d[0]} ({d[1]:.1f}/15)" for d in weak_dims[:2]])
-            summary = f"Significant foundational work is required—{weakest_list} need urgent attention. Don't pursue AI initiatives yet; instead, invest the next 9-12 months on operational excellence. Stabilize your processes, improve data practices, and strengthen leadership alignment. Once these basics are solid, you'll be in a much better position to adopt AI effectively."
-        else:
-            summary = f"Significant foundational work is required across your organization before AI can deliver value. Invest the next 9-12 months on operational excellence: stabilize your processes, improve data practices, strengthen leadership alignment, and build organizational capability. Once these basics are solid, you'll be ready to explore AI more seriously."
+
+    raw_scores = scores_data["raw_dimension_scores"]
+    readiness_band = scores_data["readiness_band"]
+    governance_index = scores_data["governance_index"]
+
+    dimension_results = list(zip(DIMENSIONS, raw_scores))
+
+    # Identify weakest two dimensions
+    sorted_dims = sorted(dimension_results, key=lambda x: x[1])
+    weakest_two = sorted_dims[:2]
+
+    weakest_text = ", ".join(
+        [f"{dim['title']} ({score}/15)" for dim, score in weakest_two]
+    )
+
+    summary = (
+        f"This evaluation indicates an overall readiness classification of "
+        f"{readiness_band['label']}. "
+        f"The two most material areas requiring executive attention are "
+        f"{weakest_text}. "
+        f"These dimensions represent the highest structural exposure to AI-related operational and governance risk. "
+    )
+
+    if governance_index < 60:
+        summary += (
+            "Governance controls are currently insufficient to support scaled AI deployment. "
+            "AI initiatives should not expand until governance risk is remediated."
+        )
+    elif governance_index < 75:
+        summary += (
+            "Governance maturity is emerging but requires strengthening to support sustainable AI scaling."
+        )
     else:
-        # Not Ready
-        summary = f"Your organization needs to focus on core operations and business fundamentals first. Plan for 12-18 months of foundational work: streamline and document your key processes, invest in modern technology infrastructure, establish data governance, and build internal capability. Revisit AI readiness after making meaningful progress on these areas."
-    
-    # Critical dimension note - only add if there's a caution/stop, and don't repeat if already mentioned
-    critical_note = ""
-    if critical_status['severity'] == 'critical':
-        critical_note = f"<strong>Critical Note:</strong> Both Data Readiness and Leadership & Alignment are below the minimum threshold. These two dimensions are foundational to any AI initiative—do not proceed with pilots or implementations until both are strengthened, regardless of your overall score."
-    elif critical_status['severity'] == 'warning':
-        # Determine which dimension is below threshold
-        if data_readiness < 9:
-            dim_below = f"Data Readiness ({data_readiness:.1f}/15)"
-        else:
-            dim_below = f"Leadership & Alignment ({leadership:.1f}/15)"
-        critical_note = f"<strong>Important:</strong> {dim_below} is below the recommended threshold of 9. This critical gap must be addressed before scaling any AI initiatives, even though your overall score is in the {readiness_band['label'].split()[1].lower()} range."
-    
-    # Combine everything
-    if critical_note:
-        summary += f" {critical_note}"
-    
-    summary += " For detailed recommendations on improving each dimension, see below. We're here to help—please reach out if you'd like to discuss your results or need guidance."
-    
+        summary += (
+            "Governance maturity is controlled and provides a stable foundation for responsible AI execution."
+        )
+
+    summary += (
+        " AI amplifies existing strengths and weaknesses. "
+        "Proceeding without correcting foundational gaps increases risk rather than value."
+    )
+
     return summary
+
