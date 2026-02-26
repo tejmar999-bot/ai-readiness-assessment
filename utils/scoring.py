@@ -10,25 +10,22 @@ def compute_scores(answers):
     raw_dimension_scores = []
 
     for dimension in DIMENSIONS:
-        dim_total = 0
-        for question in dimension["questions"]:
-            qid = question["id"]
-            dim_total += answers.get(qid, 0)
-
+        dim_total = sum(
+            float(answers.get(question["id"], 0))
+            for question in dimension["questions"]
+        )
         raw_dimension_scores.append(round(dim_total, 1))
 
     total_score = sum(raw_dimension_scores)
     max_possible = len(DIMENSIONS) * 15
-    percentage = round((total_score / max_possible) * 100)
 
+    percentage = round((total_score / max_possible) * 100) if max_possible else 0
 
     readiness_band = get_readiness_band(percentage)
-
     critical_status = get_critical_dimension_status(raw_dimension_scores)
-
     governance_index = calculate_governance_index(raw_dimension_scores)
 
-    # HARD GOVERNANCE OVERRIDE
+    # Governance override
     if critical_status["severity"] in ["critical", "warning"]:
         if readiness_band["label"] == "🟢 AI-Ready":
             readiness_band = {

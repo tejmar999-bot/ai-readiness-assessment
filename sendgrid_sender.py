@@ -252,51 +252,51 @@ def send_notification_to_tlogic(
         subject = f"New Assessment Completed: {user_name} from {user_company} - Score: {total_score}"
         
         html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: #1e3a8a; color: white; padding: 20px; }}
-        .info {{ background: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px; }}
-        .scores {{ background: white; padding: 15px; border: 1px solid #e5e7eb; border-radius: 5px; }}
-        .score-item {{ padding: 8px; margin: 5px 0; background: #f9fafb; border-radius: 3px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>🎯 New Assessment Completed!</h2>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: #1e3a8a; color: white; padding: 20px; }}
+            .info {{ background: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px; }}
+            .scores {{ background: white; padding: 15px; border: 1px solid #e5e7eb; border-radius: 5px; }}
+            .score-item {{ padding: 8px; margin: 5px 0; background: #f9fafb; border-radius: 3px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>🎯 New Assessment Completed!</h2>
+            </div>
+            
+            <div class="info">
+                <h3>Contact Information:</h3>
+                <p><strong>Name:</strong> {user_name}</p>
+                <p><strong>Email:</strong> {user_email}</p>
+                <p><strong>Company:</strong> {user_company}</p>
+                <p><strong>Title:</strong> {user_title or 'Not provided'}</p>
+                <p><strong>Phone:</strong> {user_phone or 'Not provided'}</p>
+                <p><strong>Location:</strong> {user_location or 'Not provided'}</p>
+                <p><strong>AI Stage:</strong> {ai_stage or 'Not provided'}</p>
+            </div>
+            
+            <div class="scores">
+                <h3>Assessment Scores:</h3>
+                <div class="score-item"><strong>Total Score:</strong> {total_score}/90</div>
+                <div class="score-item">Process Maturity: {dim1}/15</div>
+                <div class="score-item">Technology: {dim2}/15</div>
+                <div class="score-item">Data Readiness: {dim3}/15</div>
+                <div class="score-item">People & Culture: {dim4}/15</div>
+                <div class="score-item">Leadership: {dim5}/15</div>
+                <div class="score-item">Change Management: {dim6}/15</div>
+            </div>
+            
+            <p style="margin-top: 20px; color: #6b7280;">Follow up with this lead!</p>
         </div>
-        
-        <div class="info">
-            <h3>Contact Information:</h3>
-            <p><strong>Name:</strong> {user_name}</p>
-            <p><strong>Email:</strong> {user_email}</p>
-            <p><strong>Company:</strong> {user_company}</p>
-            <p><strong>Title:</strong> {user_title or 'Not provided'}</p>
-            <p><strong>Phone:</strong> {user_phone or 'Not provided'}</p>
-            <p><strong>Location:</strong> {user_location or 'Not provided'}</p>
-            <p><strong>AI Stage:</strong> {ai_stage or 'Not provided'}</p>
-        </div>
-        
-        <div class="scores">
-            <h3>Assessment Scores:</h3>
-            <div class="score-item"><strong>Total Score:</strong> {total_score}/90</div>
-            <div class="score-item">Process Maturity: {dim1}/15</div>
-            <div class="score-item">Technology: {dim2}/15</div>
-            <div class="score-item">Data Readiness: {dim3}/15</div>
-            <div class="score-item">People & Culture: {dim4}/15</div>
-            <div class="score-item">Leadership: {dim5}/15</div>
-            <div class="score-item">Change Management: {dim6}/15</div>
-        </div>
-        
-        <p style="margin-top: 20px; color: #6b7280;">Follow up with this lead!</p>
-    </div>
-</body>
-</html>
-        """
+    </body>
+    </html>
+            """
         
         message = Mail(
             from_email=Email(sender_email, sender_name),
@@ -345,72 +345,72 @@ def send_assistance_request_email(
         
         # Create HTML email content
         html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
-        .content {{ background: white; padding: 20px; border: 1px solid #e5e7eb; }}
-        .info-section {{ background: #f9fafb; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }}
-        .message-section {{ background: #fef3c7; padding: 15px; margin: 15px 0; border-left: 4px solid #f59e0b; border-radius: 4px; }}
-        .label {{ font-weight: bold; color: #1e3a8a; }}
-        .footer {{ background: #f3f4f6; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; color: #6b7280; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>🆘 Assistance Request Received</h2>
-        </div>
-        
-        <div class="content">
-            <div class="info-section">
-                <h3 style="margin-top: 0; color: #1e3a8a;">Contact Information:</h3>
-                <p><span class="label">Name:</span> {user_name}</p>
-                <p><span class="label">Email:</span> {user_email}</p>
-                <p><span class="label">Company:</span> {user_company}</p>
-                <p><span class="label">Title:</span> {user_title or 'Not provided'}</p>
-                <p><span class="label">Phone:</span> {user_phone or 'Not provided'}</p>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+            .content {{ background: white; padding: 20px; border: 1px solid #e5e7eb; }}
+            .info-section {{ background: #f9fafb; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }}
+            .message-section {{ background: #fef3c7; padding: 15px; margin: 15px 0; border-left: 4px solid #f59e0b; border-radius: 4px; }}
+            .label {{ font-weight: bold; color: #1e3a8a; }}
+            .footer {{ background: #f3f4f6; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; color: #6b7280; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>🆘 Assistance Request Received</h2>
             </div>
             
-            <div class="message-section">
-                <h3 style="margin-top: 0; color: #f59e0b;">Their Message:</h3>
-                <p style="white-space: pre-wrap;">{message}</p>
+            <div class="content">
+                <div class="info-section">
+                    <h3 style="margin-top: 0; color: #1e3a8a;">Contact Information:</h3>
+                    <p><span class="label">Name:</span> {user_name}</p>
+                    <p><span class="label">Email:</span> {user_email}</p>
+                    <p><span class="label">Company:</span> {user_company}</p>
+                    <p><span class="label">Title:</span> {user_title or 'Not provided'}</p>
+                    <p><span class="label">Phone:</span> {user_phone or 'Not provided'}</p>
+                </div>
+                
+                <div class="message-section">
+                    <h3 style="margin-top: 0; color: #f59e0b;">Their Message:</h3>
+                    <p style="white-space: pre-wrap;">{message}</p>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #e0f2fe; border-radius: 4px;">
+                    <p style="margin: 0;"><strong>⚡ Action Required:</strong> Please respond to this assistance request promptly!</p>
+                </div>
             </div>
             
-            <div style="margin-top: 20px; padding: 15px; background: #e0f2fe; border-radius: 4px;">
-                <p style="margin: 0;"><strong>⚡ Action Required:</strong> Please respond to this assistance request promptly!</p>
+            <div class="footer">
+                <p style="margin: 0;">AI Readiness Assessment Platform</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px;">Automated notification from Streamlit app</p>
             </div>
         </div>
-        
-        <div class="footer">
-            <p style="margin: 0;">AI Readiness Assessment Platform</p>
-            <p style="margin: 5px 0 0 0; font-size: 12px;">Automated notification from Streamlit app</p>
-        </div>
-    </div>
-</body>
-</html>
-        """
+    </body>
+    </html>
+            """
         
         # Create plain text version
         plain_text = f"""
-ASSISTANCE REQUEST RECEIVED
+    ASSISTANCE REQUEST RECEIVED
 
-Contact Information:
-Name: {user_name}
-Email: {user_email}
-Company: {user_company}
-Title: {user_title or 'Not provided'}
-Phone: {user_phone or 'Not provided'}
+    Contact Information:
+    Name: {user_name}
+    Email: {user_email}
+    Company: {user_company}
+    Title: {user_title or 'Not provided'}
+    Phone: {user_phone or 'Not provided'}
 
-Their Message:
-{message}
+    Their Message:
+    {message}
 
-Please respond to this assistance request promptly!
-        """
-        
+    Please respond to this assistance request promptly!
+            """
+            
         # Create and send email
         mail_message = Mail(
             from_email=Email(sender_email, sender_name),
@@ -462,72 +462,72 @@ def send_feedback_email(
         
         # Create HTML email content
         html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: #8b5cf6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
-        .content {{ background: white; padding: 20px; border: 1px solid #e5e7eb; }}
-        .info-section {{ background: #f9fafb; padding: 15px; margin: 15px 0; border-left: 4px solid #8b5cf6; border-radius: 4px; }}
-        .feedback-section {{ background: #f0f9ff; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }}
-        .rating {{ font-size: 24px; color: #f59e0b; }}
-        .label {{ font-weight: bold; color: #1e3a8a; }}
-        .footer {{ background: #f3f4f6; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; color: #6b7280; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>💬 User Feedback Received</h2>
-        </div>
-        
-        <div class="content">
-            <div class="info-section">
-                <h3 style="margin-top: 0; color: #8b5cf6;">From:</h3>
-                <p><span class="label">Name:</span> {user_name}</p>
-                <p><span class="label">Email:</span> {user_email}</p>
-                {f'<p><span class="label">Company:</span> {user_company}</p>' if user_company else ''}
-                {f'<p><span class="label">Assessment Score:</span> {assessment_score}</p>' if assessment_score else ''}
-                {f'<p class="rating"><span class="label">Rating:</span> {rating}</p>' if rating else ''}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: #8b5cf6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+            .content {{ background: white; padding: 20px; border: 1px solid #e5e7eb; }}
+            .info-section {{ background: #f9fafb; padding: 15px; margin: 15px 0; border-left: 4px solid #8b5cf6; border-radius: 4px; }}
+            .feedback-section {{ background: #f0f9ff; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }}
+            .rating {{ font-size: 24px; color: #f59e0b; }}
+            .label {{ font-weight: bold; color: #1e3a8a; }}
+            .footer {{ background: #f3f4f6; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; color: #6b7280; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>💬 User Feedback Received</h2>
             </div>
             
-            <div class="feedback-section">
-                <h3 style="margin-top: 0; color: #3b82f6;">Feedback:</h3>
-                <p style="white-space: pre-wrap;">{feedback_text}</p>
+            <div class="content">
+                <div class="info-section">
+                    <h3 style="margin-top: 0; color: #8b5cf6;">From:</h3>
+                    <p><span class="label">Name:</span> {user_name}</p>
+                    <p><span class="label">Email:</span> {user_email}</p>
+                    {f'<p><span class="label">Company:</span> {user_company}</p>' if user_company else ''}
+                    {f'<p><span class="label">Assessment Score:</span> {assessment_score}</p>' if assessment_score else ''}
+                    {f'<p class="rating"><span class="label">Rating:</span> {rating}</p>' if rating else ''}
+                </div>
+                
+                <div class="feedback-section">
+                    <h3 style="margin-top: 0; color: #3b82f6;">Feedback:</h3>
+                    <p style="white-space: pre-wrap;">{feedback_text}</p>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #f0fdf4; border-radius: 4px;">
+                    <p style="margin: 0;"><strong>💡 Great!</strong> User feedback helps improve the assessment experience.</p>
+                </div>
             </div>
             
-            <div style="margin-top: 20px; padding: 15px; background: #f0fdf4; border-radius: 4px;">
-                <p style="margin: 0;"><strong>💡 Great!</strong> User feedback helps improve the assessment experience.</p>
+            <div class="footer">
+                <p style="margin: 0;">AI Readiness Assessment Platform</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px;">Automated notification from Streamlit app</p>
             </div>
         </div>
-        
-        <div class="footer">
-            <p style="margin: 0;">AI Readiness Assessment Platform</p>
-            <p style="margin: 5px 0 0 0; font-size: 12px;">Automated notification from Streamlit app</p>
-        </div>
-    </div>
-</body>
-</html>
-        """
+    </body>
+    </html>
+            """
         
         # Create plain text version
         plain_text = f"""
-USER FEEDBACK RECEIVED
+    USER FEEDBACK RECEIVED
 
-From:
-Name: {user_name}
-Email: {user_email}
-{f'Company: {user_company}' if user_company else ''}
-{f'Assessment Score: {assessment_score}' if assessment_score else ''}
-{f'Rating: {rating}' if rating else ''}
+    From:
+    Name: {user_name}
+    Email: {user_email}
+    {f'Company: {user_company}' if user_company else ''}
+    {f'Assessment Score: {assessment_score}' if assessment_score else ''}
+    {f'Rating: {rating}' if rating else ''}
 
-Feedback:
-{feedback_text}
+    Feedback:
+    {feedback_text}
 
-User feedback helps improve the assessment experience.
-        """
+    User feedback helps improve the assessment experience.
+            """
         
         # Create and send email
         mail_message = Mail(

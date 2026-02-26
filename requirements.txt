@@ -1,0 +1,8 @@
+streamlit
+pandas
+plotly
+openai
+supabase
+python-dotenv
+sendgrid
+requests

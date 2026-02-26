@@ -698,54 +698,65 @@ def render_navigation_buttons():
         if st.session_state.current_dimension > 0:
             if st.button("← Previous", type="secondary"):
                 st.session_state.current_dimension -= 1
-                scroll_to_top()
                 st.session_state.scroll_to_question = None
+                scroll_to_top()
                 st.rerun()
 
     with col2:
         if st.button("Reset Assessment", type="secondary"):
-            st.session_state.answers = {}
+            keys_to_reset = [
+                "answers",
+                "current_dimension",
+                "assessment_complete",
+                "user_info_collected",
+                "user_name",
+                "user_email",
+                "user_title",
+                "user_company",
+                "user_phone",
+                "user_location",
+                "scores_data",
+                "mode",
+            ]
+
+            for key in keys_to_reset:
+                if key in st.session_state:
+                    del st.session_state[key]
+
             st.session_state.current_dimension = 0
-            st.session_state.assessment_complete = False
-            st.session_state.user_info_collected = False
-            st.session_state.user_name = ""
-            st.session_state.user_email = ""
-            st.session_state.user_title = ""
-            st.session_state.user_company = ""
-            st.session_state.user_phone = ""
-            st.session_state.user_location = ""
+            st.session_state.answers = {}
+            st.session_state.mode = "assessment"
             st.rerun()
 
     with col3:
         if st.session_state.current_dimension < len(DIMENSIONS) - 1:
             if st.button("Next →", type="primary"):
                 st.session_state.current_dimension += 1
-                scroll_to_top()
                 st.session_state.scroll_to_question = None
+                scroll_to_top()
                 st.rerun()
         else:
             if st.button("Complete Assessment", type="primary"):
-                # Calculate scores
-                scores_data = compute_scores(st.session_state.answers)
+                st.session_state["scores_data"] = compute_scores(
+                    st.session_state.answers
+                )
+                st.session_state["mode"] = "results"
 
-                # Save to database
                 try:
                     assessment = save_assessment(
                         company_name=st.session_state.company_name,
-                        scores_data=scores_data,
+                        scores_data=st.session_state["scores_data"],
                         answers=st.session_state.answers,
                         primary_color=st.session_state.primary_color,
                         user_name=st.session_state.user_name or "",
-                        user_email=st.session_state.user_email or "")
+                        user_email=st.session_state.user_email or "",
+                    )
                     st.session_state.current_assessment_id = assessment.id
                 except Exception as e:
                     st.error(f"Error saving assessment: {str(e)}")
 
-                # Don't send email at completion - send when user requests report
-                # This way we only send email with actual report attached
-
                 st.session_state.assessment_complete = True
-                scroll_to_top()  # Scroll to top to show results
+                scroll_to_top()
                 st.rerun()
 
 
@@ -803,53 +814,8 @@ def create_dimension_breakdown_chart(raw_scores, dimension_titles, dimension_col
     
     return fig
 
+def render_results_dashboard(scores_data):
 
-def render_results_dashboard():
-    """Render the results dashboard"""
-    # Calculate scores
-    total_score = scores_data["total"]
-    percentage = scores_data["percentage"]
-    readiness_band = scores_data["readiness_band"]
-    governance_index = scores_data["governance_index"]
-    band_color = readiness_band["color"]
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown(f"""
-            <div class="metric-card">
-                <h3>Total Score</h3>
-                <div style="font-size:28px;font-weight:bold;">
-                    {total_score}/90
-                </div>
-                <div style="font-size:18px;color:#9CA3AF;">
-                    ({percentage}%)
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        st.markdown(f"""
-            <div class="metric-card">
-                <h3>Readiness Level</h3>
-                <div style="font-size:22px;font-weight:bold;color:{band_color};">
-                    {readiness_band['label']}
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col3:
-        st.markdown(f"""
-            <div class="metric-card">
-                <h3>Governance Index</h3>
-                <div style="font-size:28px;font-weight:bold;color:{band_color};">
-                    {governance_index}%
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-
-    # Custom CSS for Results page scrollbars
     st.markdown("""
         <style>
         /* Hide all scrollbars except the main page scrollbar */
@@ -909,85 +875,85 @@ def render_results_dashboard():
     
     # FAIL-PROOF scroll to top when Results page loads
     components.html("""
-<script>
-(function() {
-  var parentDoc = window.parent.document;
-  var parentWin = window.parent;
-  
-  function scrollToTop() {
-    try {
-      // 1. Reset parent window scroll
-      try { parentWin.scrollTo(0, 0); } catch (e) {}
-      
-      // 2. Reset document scrolling element
-      var doc = parentDoc.scrollingElement || parentDoc.documentElement;
-      if (doc) {
-        try { doc.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { doc.scrollTop = 0; }
-      }
-      
-      // 3. Reset main section scroll
-      var main = parentDoc.querySelector('section.main') || parentDoc.querySelector('main');
-      if (main) {
-        try { main.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { main.scrollTop = 0; }
-      }
-      
-      // 4. Find ALL elements with scrollTop > 0 and reset them
-      var allElems = parentDoc.getElementsByTagName('*');
-      for (var i = 0; i < allElems.length; i++) {
-        var elem = allElems[i];
-        if (elem.scrollTop && elem.scrollTop > 0) {
-          try { elem.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { elem.scrollTop = 0; }
+    <script>
+    (function() {
+    var parentDoc = window.parent.document;
+    var parentWin = window.parent;
+    
+    function scrollToTop() {
+        try {
+        // 1. Reset parent window scroll
+        try { parentWin.scrollTo(0, 0); } catch (e) {}
+        
+        // 2. Reset document scrolling element
+        var doc = parentDoc.scrollingElement || parentDoc.documentElement;
+        if (doc) {
+            try { doc.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { doc.scrollTop = 0; }
         }
-      }
-    } catch (e) {
-      try { parentWin.scrollTo(0,0); } catch (e2) {}
+        
+        // 3. Reset main section scroll
+        var main = parentDoc.querySelector('section.main') || parentDoc.querySelector('main');
+        if (main) {
+            try { main.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { main.scrollTop = 0; }
+        }
+        
+        // 4. Find ALL elements with scrollTop > 0 and reset them
+        var allElems = parentDoc.getElementsByTagName('*');
+        for (var i = 0; i < allElems.length; i++) {
+            var elem = allElems[i];
+            if (elem.scrollTop && elem.scrollTop > 0) {
+            try { elem.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { elem.scrollTop = 0; }
+            }
+        }
+        } catch (e) {
+        try { parentWin.scrollTo(0,0); } catch (e2) {}
+        }
     }
-  }
 
-  // Execute immediately and repeatedly with MORE attempts for results page
-  scrollToTop();
+    // Execute immediately and repeatedly with MORE attempts for results page
+    scrollToTop();
 
-  // Run many times with delays - very aggressive for results page
-  setTimeout(scrollToTop, 50);
-  setTimeout(scrollToTop, 100);
-  setTimeout(scrollToTop, 150);
-  setTimeout(scrollToTop, 200);
-  setTimeout(scrollToTop, 300);
-  setTimeout(scrollToTop, 400);
-  setTimeout(scrollToTop, 500);
-  setTimeout(scrollToTop, 600);
-  setTimeout(scrollToTop, 800);
-  setTimeout(scrollToTop, 1000);
-  setTimeout(scrollToTop, 1200);
-  setTimeout(scrollToTop, 1500);
-  setTimeout(scrollToTop, 2000);
-
-  // Run after load event multiple times
-  window.addEventListener('load', function(){ 
-    setTimeout(scrollToTop, 40);
+    // Run many times with delays - very aggressive for results page
+    setTimeout(scrollToTop, 50);
     setTimeout(scrollToTop, 100);
+    setTimeout(scrollToTop, 150);
+    setTimeout(scrollToTop, 200);
     setTimeout(scrollToTop, 300);
+    setTimeout(scrollToTop, 400);
     setTimeout(scrollToTop, 500);
-  }, false);
-  
-  // Monitor DOM changes and scroll to top when content loads
-  var moDebounceTimer = null;
-  var scrollCount = 0;
-  var mo = new MutationObserver(function(muts) {
-    if (moDebounceTimer) clearTimeout(moDebounceTimer);
-    moDebounceTimer = setTimeout(function() {
-      scrollToTop();
-      scrollCount++;
-      // Keep scrolling aggressively for first 30 mutations
-      if (scrollCount < 30) {
+    setTimeout(scrollToTop, 600);
+    setTimeout(scrollToTop, 800);
+    setTimeout(scrollToTop, 1000);
+    setTimeout(scrollToTop, 1200);
+    setTimeout(scrollToTop, 1500);
+    setTimeout(scrollToTop, 2000);
+
+    // Run after load event multiple times
+    window.addEventListener('load', function(){ 
+        setTimeout(scrollToTop, 40);
         setTimeout(scrollToTop, 100);
-      }
-    }, 60);
-  });
-  mo.observe(document.body, { childList: true, subtree: true });
-})();
-</script>
-        """, height=0)
+        setTimeout(scrollToTop, 300);
+        setTimeout(scrollToTop, 500);
+    }, false);
+    
+    // Monitor DOM changes and scroll to top when content loads
+    var moDebounceTimer = null;
+    var scrollCount = 0;
+    var mo = new MutationObserver(function(muts) {
+        if (moDebounceTimer) clearTimeout(moDebounceTimer);
+        moDebounceTimer = setTimeout(function() {
+        scrollToTop();
+        scrollCount++;
+        // Keep scrolling aggressively for first 30 mutations
+        if (scrollCount < 30) {
+            setTimeout(scrollToTop, 100);
+        }
+        }, 60);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
+            """, height=0)
 
 
     # Overall score cards
@@ -1037,8 +1003,6 @@ def render_results_dashboard():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-
 
             with col3:
                 governance_index = scores_data["governance_index"]
@@ -1727,144 +1691,6 @@ def render_results_dashboard():
             st.rerun()
 
 
-def render_chatgpt_assistant():
-    """Render standalone ChatGPT AI assistant page"""
-    primary_color = st.session_state.primary_color
-
-    # Header with logo
-    col1, col2 = st.columns([4, 1])
-
-    with col1:
-        st.markdown(
-            f'<div class="main-header" style="color: {primary_color};">🤖 ChatGPT AI Assistant</div>',
-            unsafe_allow_html=True)
-        st.markdown(
-            '<div class="sub-header">Chat with AI about anything - process improvement, AI strategy, or general questions</div>',
-            unsafe_allow_html=True)
-
-    with col2:
-        if st.session_state.company_logo is not None:
-            st.markdown(f"""
-                <div style="text-align: right; width: 139px; height: 40px; overflow: hidden; margin-left: auto;">
-                    <img src="data:image/png;base64,{image_to_base64(st.session_state.company_logo, max_height=40)}" 
-                         style="width: 100%; height: auto; display: block;" />
-                </div>
-                """,
-                        unsafe_allow_html=True)
-
-    # Check if OpenAI API key is available
-    if not os.environ.get("OPENAI_API_KEY"):
-        st.error(
-            "💡 **OpenAI API key is not configured.** Please add your OPENAI_API_KEY to the environment secrets to use this feature."
-        )
-        return
-
-    st.markdown("---")
-
-    # Display chat messages
-    chat_container = st.container()
-    with chat_container:
-        if st.session_state.standalone_chat_messages:
-            for msg in st.session_state.standalone_chat_messages:
-                role = msg['role']
-                content = msg['content']
-
-                if role == 'user':
-                    st.markdown(f"""
-                    <div style="background-color: #1F2937; padding: 1rem; margin: 0.5rem 0; border-radius: 0.5rem; border-left: 3px solid {primary_color};">
-                        <strong style="color: {primary_color};">You:</strong><br>
-                        <span style="color: #E07A5F;">{content}</span>
-                    </div>
-                    """,
-                                unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div style="background-color: #374151; padding: 1rem; margin: 0.5rem 0; border-radius: 0.5rem;">
-                        <strong style="color: #10B981;">ChatGPT:</strong><br>
-                        <span style="color: #E5E7EB;">{content}</span>
-                    </div>
-                    """,
-                                unsafe_allow_html=True)
-        else:
-            st.info(
-                "👋 Welcome! I'm your AI assistant. Ask me anything about process improvement, AI strategy, or any general questions you have."
-            )
-
-    # Chat input at the bottom
-    st.markdown("---")
-
-    # Use session state to manage input value for clearing after send
-    if 'chat_input_value' not in st.session_state:
-        st.session_state.chat_input_value = ""
-
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        user_message = st.text_input("Type your message",
-                                     placeholder="Ask me anything...",
-                                     value=st.session_state.chat_input_value,
-                                     key="standalone_chat_input",
-                                     label_visibility="collapsed")
-    with col2:
-        send_button = st.button("Send",
-                                type="primary",
-                                use_container_width=True,
-                                key="standalone_send")
-
-    if send_button and user_message and user_message.strip():
-        # Add user message to chat
-        st.session_state.standalone_chat_messages.append({
-            'role':
-            'user',
-            'content':
-            user_message
-        })
-
-        # Get AI response
-        with st.spinner("ChatGPT is thinking..."):
-            try:
-                messages = [{
-                    'role': msg['role'],
-                    'content': msg['content']
-                } for msg in st.session_state.standalone_chat_messages]
-
-                ai_response = get_chat_response(messages,
-                                                assessment_context=None)
-
-                st.session_state.standalone_chat_messages.append({
-                    'role':
-                    'assistant',
-                    'content':
-                    ai_response
-                })
-            except Exception as e:
-                st.session_state.standalone_chat_messages.append({
-                    'role':
-                    'assistant',
-                    'content':
-                    f"I apologize, but I encountered an error: {str(e)}"
-                })
-
-        # Clear input field after sending
-        st.session_state.chat_input_value = ""
-        st.rerun()
-
-    # Clear chat button
-    if st.session_state.standalone_chat_messages:
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            if st.button("🗑️ Clear Chat History",
-                         type="secondary",
-                         use_container_width=True):
-                st.session_state.standalone_chat_messages = []
-                st.rerun()
-
-    # Back to assessment button
-    st.markdown("---")
-    if st.button("← Back to Assessment", type="secondary"):
-        st.session_state.current_page = "assessment"
-        st.rerun()
-
-
 def main():
     """Main application function"""
     initialize_session_state()
@@ -2190,7 +2016,8 @@ def main():
 
     else:
         # Results mode
-        render_results_dashboard()
+        render_results_dashboard(scores_data)
+
 
     # Render copyright footer at the bottom
     render_footer()
